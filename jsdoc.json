@@ -1,0 +1,24 @@
+{
+    "source": {
+        "include": ["./src/main"]
+    },
+    
+    "opts": {
+        "destination": "./docs"
+    },
+
+    "templates": {
+        "default": {
+            "outputSourceFiles": false
+        },
+
+        "cleverLinks": true        
+    },
+
+    "plugins": ["plugins/markdown"],
+
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": ["jsdoc", "closure"]
+    }    
+}
