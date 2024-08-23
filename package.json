@@ -1,6 +1,6 @@
 {
     "name": "@ut8pia-cloud/fluent",
-    "version": "0.0.0-8",
+    "version": "0.0.0-9",
     "description": "Ensure your code aligns with your thoughts!",
     "repository": {
         "type": "git",
@@ -13,10 +13,6 @@
         "programming",
         "immutable"
     ],
-    "publishConfig": {
-        "@ut8pia-cloud:registry": "https://registry.npmjs.org",
-        "access": "public"
-    },
     "license": "MIT",
     "author": "roberto venditti <rvend@libero.it>",
     "files": [

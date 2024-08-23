@@ -1,4 +1,4 @@
-name: Publish to npm
+name: Publish to both github and npm
 
 on:
   release:
@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
@@ -23,7 +23,12 @@ jobs:
           
       - name: Build the package
         run: npm run build
-      
+
+      - name: Publish to gitHub
+        run: npm publish --registry https://npm.pkg.github.com
+        env: 
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
+          
       - name: Publish to npm
         run: npm publish
         env: 
