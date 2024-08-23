@@ -14,7 +14,7 @@
         "immutable"
     ],
     "publishConfig": {
-        "@ut8pia-cloud:registry": "https://npmjs.com",
+        "@ut8pia-cloud:registry": "https://registry.npmjs.com",
         "access": "public"
     },
     "license": "MIT",
