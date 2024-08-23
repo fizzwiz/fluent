@@ -18,7 +18,7 @@ Using the library in an HTML page is just as straightforward:
 </script>
 ```
 
-The `fluent.bundle.js` script is available on the `jsdelivr` CDN at [this URL](https://cdn.jsdelivr.net/npm/ut8pia-cloud/fluent@0.0.0-12/fluent.bundle.js). When included, this script creates a global `fluent` variable in your browser’s environment, giving you hierarchical access to all the library’s features.
+The `fluent.bundle.js` script is available on the `jsdelivr` CDN at [this URL](https://cdn.jsdelivr.net/npm/ut8pia-cloud/fluent@latest/dist/fluent.bundle.js). When included, this script creates a global `fluent` variable in your browser’s environment, giving you hierarchical access to all the library’s features.
 
 For the latest and most comprehensive documentation, visit the library’s [documentation pages](https://ut8pia-cloud.github.io/fluent).
 
