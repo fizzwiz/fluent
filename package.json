@@ -1,6 +1,6 @@
 {
     "name": "@ut8pia-cloud/fluent",
-    "version": "0.0.0-3",
+    "version": "0.0.0-4",
     "description": "Ensure your code aligns with your thoughts!",
     "repository": {
         "type": "git",
@@ -14,7 +14,7 @@
         "immutable"
     ],
     "publishConfig": {
-        "@ut8pia-cloud:registry": "https://registry.npmjs.com",
+        "@ut8pia-cloud:registry": "https://registry.npmjs.org",
         "access": "public"
     },
     "license": "MIT",
