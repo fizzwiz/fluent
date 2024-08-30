@@ -68,8 +68,8 @@ export class What {
         return What.else(this, f)
     }
 
-    match(f) {
-        return What.match(this, f)
+    match(...ff) {
+        return What.match(this, ...ff)
     }
 
     each(f) {
@@ -161,8 +161,13 @@ What.what = function(f, ...args) {
             : f
 }
 
-What.match = function(...ff) { 
-    const got = arg => ff.map(f => What.what(f, arg));
+What.match = function(...ff) {     
+    const got = ff.length < 2?  arg => {
+        const got = What.what(ff[0], arg);
+        return got[Symbol.iterator]? Each.as(got).then(value => [arg, value])
+            : [arg, got]
+    } : arg => ff.map(f => What.what(f, arg));
+        
     return What.as(got)
 }
 

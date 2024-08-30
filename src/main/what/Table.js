@@ -6,8 +6,7 @@ export class Table extends What {
         super();
 
         this._matrix = matrix;
-        this._names = index;
-        this._maps = index.map(array => new Map(array.map((item, i) => [item, i])))
+        this._index = index.map(names => new Map(undefined===names? []: names.map((item, i) => [item, i])))
     }
 
     get matrix() {
@@ -18,8 +17,8 @@ export class Table extends What {
         return this._names
     }
 
-    get maps() {
-        return this._maps
+    get index() {
+        return this._index
     }
 
     what(...args) {
@@ -31,7 +30,18 @@ export class Table extends What {
     }
 
     ii(args) {
-        return args.map((arg, i) => typeof(arg) === 'number' || this.names[i] === undefined? arg: this.maps[i].get(arg))
+        return args.map((arg, i) => typeof(arg) === 'number'? arg: this.index[i].get(arg))
     }
 
+    getRow(iOrName) {
+        let i = tyepof(iOrName) === 'string'? this.index[0].get(iOrName)
+            : i;
+        return this.matrix.getRow(i)
+    }
+
+    getCol(iOrName) {
+        let i = tyepof(iOrName) === 'string'? this.index[1].get(iOrName)
+            : i;
+        return this.matrix.getCol(i)
+    }
 }

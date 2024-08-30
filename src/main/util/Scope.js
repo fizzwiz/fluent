@@ -73,6 +73,10 @@ export class Scope {
 		return got
 	}
 
+    descendants(queue=new ArrayQueue(false)) {
+        return queue.clear().let(this).search(scope => scope.childre())
+    }
+
     get(name) {
         return this.ancestors()
             .which(a => undefined !== a[name])

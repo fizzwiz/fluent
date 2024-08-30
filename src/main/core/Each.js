@@ -1,5 +1,6 @@
 import { What } from './What.js';
 import { Path } from '../util/Path.js';
+import Reader from "n-readlines";
 
 /**
  * The `Each` class implements an abstract, immutable, iteration of items by defining
@@ -61,6 +62,34 @@ export class Each {
     static of(...items) {
 		return Each.as(items)
 	}
+
+    /**
+     * Iterates over a file, by lines
+     * Each line is a string
+     * 
+     * @param {*} file 
+     * @param {*} decoder 
+     * @returns 
+     */
+    static lineOf(file, decoder='utf8') {
+        
+        const 
+            liner = new Reader(file),
+            got = new Each();
+        
+        got[Symbol.iterator] = function*() {
+            
+            let buf = liner.next();
+            while(buf) {
+                yield buf.toString(decoder);
+                buf = liner.next()
+            } 
+        }
+
+        liner.close();
+
+        return got
+    }
 
     /**
      * Checks if `this` iteration is equivalent to `that` iteration

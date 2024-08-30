@@ -43,5 +43,8 @@
         "test": "mocha --recursive ./src/tests/",
         "doc": "jsDoc -r -c jsdoc.json",
         "build": "webpack --mode production"
+    },
+    "dependencies": {
+        "n-readlines": "^1.0.1"
     }
 }

@@ -4,27 +4,27 @@ import { Scope } from "./Scope.js";
 
 export class Thought extends Scope {
 
-    constructor(parent=undefined, children=new Map()) {
-        super(parent, children)
+    constructor(parent=undefined, name=undefined) {
+        super(parent, name)
     }
 
     letElse(name, ...steps) {
-        return this.letChild(name, [Thought.DISJUNCTIVE, ...steps])
+        return this.let(name, [Thought.DISJUNCTIVE, ...steps])
     }
 
     letThen(name, ...steps) {
-        return this.letChild(name, [Thought.CONJUNCTIVE, ...steps])
+        return this.let(name, [Thought.CONJUNCTIVE, ...steps])
     }
     
     letEach(name, ...steps) {
-        return this.letChild(name, [Thought.MULTIPLICATIVE, ...steps])
+        return this.let(name, [Thought.MULTIPLICATIVE, ...steps])
     }
 
     about(name) {
-        if(this.children[name]) {
+        if(this[name]) {
             
             const got = (...args) => {
-                let[type, ...ff] = this.children[name];
+                let[type, ...ff] = this[name];
                 ff = ff.map(f => this.func(f));
                 const 
                     w = 

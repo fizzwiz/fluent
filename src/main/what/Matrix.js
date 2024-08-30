@@ -1,6 +1,7 @@
 import { Each } from "../core/Each.js";
 import { What } from "../core/What.js";
 import { Path } from "../util/Path.js";
+import { Table } from "./Table.js";
 
 /**
  * Una matrice di items di qualunque tipo 
@@ -8,13 +9,8 @@ import { Path } from "../util/Path.js";
  */
 export class Matrix extends What {
     
-    what(...ii) {
-        
-        if(Matrix.checkRange(ii, this._dims)) {
-            return undefined;
-        } else {
-            throw 'out of range'
-        }
+    what(...ii) {        
+        throw 'abstract method!'
     }
 
     constructor(...dims) {
@@ -24,6 +20,10 @@ export class Matrix extends What {
 
     get dims() {
         return this._dims
+    }
+
+    get index() {
+        return this._index
     }
 
     static as(f, ...dims) {
@@ -65,6 +65,10 @@ export class Matrix extends What {
                 got += this.getChild(0, i).toString(path.add(i))
             }
         }
+    }
+
+    toTable(rowNames, colNames) {
+        return new Table(this.entries(), rowNames, colNames)
     }
 
     static i(ii, nn) {
@@ -146,7 +150,7 @@ export class Matrix extends What {
             return 0 === d? got: got.t(1, 0)
         } else {
             const
-                got = new Matrix([...children[0].dims].splice(d, 0, children.length));
+                got = new Matrix(...children[0].dims.splice(d, 0, children.length));
             got.what = (...ii) => children[ii[d]].what(...ii.filter((_, k) => k != d));
             return got
         }
@@ -335,7 +339,7 @@ export class Matrix extends What {
     }
 
     addRow(data, i=this.ncols) {
-        const m = Matrix.of(data, [data.length]);
+        const m = Matrix.of(data, data.length);
         return this.addChild(0, i, m)
     }
 
