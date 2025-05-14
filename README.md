@@ -1,28 +1,72 @@
-**Warning:** *Please note that this library is not yet ready for production use. This release is primarily for testing the publication workflow that will ultimately lead to the official release. Additionally, the documentation and the website (www.ut8pia.cloud) are still under development and not fully available. The first stable release of the library will be marked as version 0.0.1*
+# @fizzwiz/fluent
 
-The `@ut8pia-cloud/fluent` library is designed to mirror the natural flow of your thoughts in code. It brings syntactic sugar that simplifies the expression of complex concepts, making your code more concise, readable and intuitive. Thanks to its intuitive design, the library requires no learning curve.
+> Mirror the natural flow of thought in your code.
 
-The library is organized into four main packages: `core`, `each`, `what`, and `util`. Each package corresponds to a directory containing multiple files, with each file defining a specific class. The `core` package includes abstract definitions for `Each` and `What`, the foundational concepts of the entire library. Classes derived from these concepts are found in the `each` and `what` packages, respectively.
+`@fizzwiz/fluent` is a modern JavaScript library designed to bring elegant syntactic sugar to your code. It simplifies the expression of complex logic and promotes intuitive, readable, and concise development — with zero learning curve.
 
-If you’re working on a `Node.js` project, you can easily import and use any class. Here’s an example with the `Each` class:
+---
+
+## ✨ Features
+
+- 🧠 **Thoughtful API** – Code reads like natural language.
+- 🧩 **Modular Structure** – Organized into logical packages.
+- 🚀 **Dual Environment Support** – Use in Node.js or directly in the browser.
+- 📚 **Zero Learning Curve** – Intuitive by design.
+
+---
+
+## 📦 Package Structure
+
+The library is organized into four main packages:
+
+| Package  | Description                                       |
+|----------|---------------------------------------------------|
+| `core`   | Base abstractions: defines `Each` and `What`      |
+| `each`   | Classes that extend the `Each` concept            |
+| `what`   | Classes that extend the `What` concept            |
+| `util`   | Utility functions and general-purpose helpers     |
+
+Each package corresponds to a directory, and each file within defines a single class.
+
+---
+
+## 🛠️ Usage
+
+### ✅ Node.js (ES Modules)
+
+Install via npm (once published):
+
+```bash
+npm install @fizzwiz/fluent
+```
+
+Then use:
 
 ```javascript
-import { Each } from '@ut8pia-cloud/fluent/core/Each.js';
+import { Each } from '@fizzwiz/fluent/core/Each.js';
+
 const each = Each.of('a', 'b');
 ```
 
-Using the library in an HTML page is just as straightforward:
+✅ Browser (via CDN)
+
+Include the bundle in your HTML:
 
 ```html
-<script src="fluent.bundle.js"></script>
-<script type="text/javascript">
-    const each = Each.of('a', 'b');
+<script src="https://cdn.jsdelivr.net/gh/fizzwiz/fluent@latest/dist/fluent.bundle.js"></script>
+<script>
+  const each = fluent.Each.of('a', 'b');
 </script>
 ```
 
-The `fluent.bundle.js` script is available on the `jsdelivr` CDN at [this URL](https://cdn.jsdelivr.net/gh/ut8pia-cloud/fluent@latest/dist/fluent.bundle.js). When included, this script creates a global `fluent` variable in your browser’s environment, giving you hierarchical access to all the library’s features.
+This will expose a global fluent object with access to all features.
 
-For the latest and most comprehensive documentation, visit the library’s [documentation pages](https://ut8pia-cloud.github.io/fluent).
+📄 Documentation
 
-To explore the concepts behind the library in detail, along with tutorials and example code, refer to the web-site: [www.ut8pia.cloud](http://www.ut8pia.cloud)
+Full API docs and usage examples:
+👉 https://fizzwiz.github.io/fluent
 
+📝 Blog & Tutorials
+
+Explore concepts, tutorials, and deep dives:
+👉 https://fluent-js.blogspot.com
