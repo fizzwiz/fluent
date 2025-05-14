@@ -1,7 +1,7 @@
 import {describe, it} from 'mocha';
 import assert from 'assert';
+import { Each } from '../../main/core/Each.js';
 
-/**
 describe('Each', () => {
     
     it('as', () => {
@@ -46,7 +46,7 @@ describe('Each', () => {
         const 
             aa = Each.of(0, 1)
                 .match(Each.of(2)),
-            bb = [[0, 2], [1, undefined]]
+            bb = [[0, 2]]
 
         assert(aa.equals(bb));
     }); 
@@ -63,8 +63,9 @@ describe('Each', () => {
     
     it('self', () => {
         const each = Each.of(0, 1)
-            .self(true)
-                .when(3, false, false);
+                .self()
+                    .else()
+                    .when(3, false, false);
         assert(each.equals([0, 1, 0]))
     }); 
     
@@ -74,12 +75,6 @@ describe('Each', () => {
         assert.equal(item, 0)
     }); 
 
-    it('let', () => {
-        const each = Each.of(0, 1)
-            .let(2);
-        assert(each.equals([0, 1, 2]))
-    }); 
-
     it('NATURAL', () => {
         const each = Each.NATURAL
             .when((_, i) => i === 1)
@@ -87,5 +82,5 @@ describe('Each', () => {
         assert(each.equals([1, 2, 3]))
     });    
 })
- */
+/** */
 

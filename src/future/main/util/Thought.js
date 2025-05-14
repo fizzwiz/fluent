@@ -1,4 +1,4 @@
-import { What } from "../core/What.js";
+import { What } from "../../../main/core/What.js";
 import { Matcher } from "../what/Matcher.js";
 import { Scope } from "./Scope.js";
 

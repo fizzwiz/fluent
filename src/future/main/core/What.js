@@ -117,15 +117,19 @@ What.when = function(f, predicateOrIndex, start=true, inclusive=start) {
 }
 
 What.then = function(...ff) {
+    
     return What.as(arg => {
         
         let got = arg;
         
         for(let f of ff) {
-            got = What.what(f, got);
             if(undefined === got) {
                 break
-            }
+            } else if(got instanceof Promise) {
+                got = got.then(f)
+            } else {
+                got = What.what(f, got);
+            }           
         }
 
         return got
@@ -139,7 +143,11 @@ What.else = function(...ff) {
         let got;
         
         for(let f of ff) {
-            got = What.what(f, arg);
+            try {
+                 got = What.what(f, arg);
+            } catch(error) {
+                got = undefined
+            }           
             if(undefined !== got) {
                 break
             }

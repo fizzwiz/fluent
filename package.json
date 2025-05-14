@@ -1,10 +1,10 @@
 {
-    "name": "@ut8pia-cloud/fluent",
-    "version": "0.0.0-15",
+    "name": "@fizzwiz/fluent",
+    "version": "0.0.0-0",
     "description": "Ensure your code aligns with your thoughts!",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ut8pia-cloud/fluent.git"
+        "url": "git+https://github.com/fizzwiz/fluent.git"
     },
     "publishConfig": {
         "registry": "https://registry.npmjs.org",
@@ -21,7 +21,7 @@
     "author": "roberto venditti <rvend@libero.it>",
     "files": [
         "README.md",
-        "trg/fluent.js",
+        "trg/fluent.bundle.js",
         "src/main/"
     ],
     "type": "module",
@@ -40,7 +40,7 @@
         "./*": "./src/main/*"
     },
     "scripts": {
-        "test": "mocha --recursive ./src/tests/",
+        "test": "mocha --recursive ./src/tests",
         "doc": "jsDoc -r -c jsdoc.json",
         "build": "webpack --mode production"
     },

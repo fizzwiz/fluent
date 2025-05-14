@@ -63,6 +63,20 @@ export class Each {
 		return Each.as(items)
 	}
 
+    static along(start, next) {
+        const got = new Each()
+
+        got[Symbol.iterator] = function*() {
+            let current = start
+            while(current) {
+                yield current
+                current = What.what(next, current)
+            }
+        }
+
+        return got
+    }		
+
     /**
      * Iterates over a file, by lines
      * Each line is a string
@@ -135,15 +149,12 @@ export class Each {
 
     /**
      * Appends the given `that` items to `this` items.
-     * 
-     * If no argument is provided, the method calls its static version by passing `this` {@link Each}
-     * as an argument, which is expected to be an iteration of iterations.
-     * 
+     *  
      * @param {Iterable<*>} that whatever `Iterable` object
      * @returns {Each} concatenation of `this` and `that` iterations
      */
-    else(that) {
-        return Each.else(this, Each.as(that))
+    else(that=undefined) {
+        return that == undefined? Each.else(this): Each.else(Each.of(this, Each.as(that)))
     }
 
     /**
@@ -155,8 +166,8 @@ export class Each {
      * @param {Iterable<*>} that whatever `Iterable` object
      * @returns {Each} iteration of couples `[a, b]` where a, b are corresponding items from `this` and `that` iterations, respectively
      */
-    match(that) {
-        return Each.match(this, Each.as(that))
+    match(that=undefined) {
+        return that == undefined? Each.match(...this): Each.match(this, Each.as(that))
     }
 
     /**
@@ -168,7 +179,10 @@ export class Each {
      * @param {Iterable<*>} that whatever `Iterable` object 
      * @returns {Each | What} all the couples `[a, b]` where a, b are items from `this` and `that` iterations, respectively
      */
-    each(that) {
+    each(that=undefined) {
+        
+        if(undefined == that) return Each.each(this);
+
         const 
             aa = this,
             got = new Each();
@@ -276,12 +290,13 @@ Each.if = function(aa, p=item => undefined !== item) {
 }
 
 Each.which = function(aa, p=item => undefined !== item) {
-       
+
     const got = new Each();
     
     got[Symbol.iterator] = function*() {
+        let i = 0;
         for(let a of aa) {
-            if(What.what(p, a)) {
+            if(What.what(p, a, i++)) {
                 yield(a)
             }
         }
@@ -324,15 +339,15 @@ Each.then = function(aa, f) {
  * @param {*} aaa 
  * @returns {Each} flattened iteration
  */
-Each.else = function(...aaa) {
-       
+Each.else = function(aaa) {
+
     const got = new Each();
     
     got[Symbol.iterator] = function*() {
         
         for(let aa of aaa) {
             if(aa[Symbol.iterator]) {                
-                for(let a of Each.else(...aa)) {                    
+                for(let a of aa) {                    
                     yield a 
                 }  
             } else {
@@ -346,11 +361,11 @@ Each.else = function(...aaa) {
 
 /**
  * Parallel composition of corresponding items from the given iterations
- * @param {*} aaa iteration of iterations
+ * @param {Iterable<Iterable>} aaa iteration of iterations
  * @returns {Each} iteration of arrays `[a, b, ...]`
  */
 Each.match = function(...aaa) {
-       
+
     const got = new Each();
     
     got[Symbol.iterator] = function*() {
@@ -364,7 +379,7 @@ Each.match = function(...aaa) {
             
             const next = iit.map(it => it.next());            
             
-            if(next.every(entry => entry.done)) {
+            if(next.some(entry => entry.done)) {
                 break
             } else {
                 yield next.map(entry => entry.value)
@@ -380,7 +395,9 @@ Each.match = function(...aaa) {
  * @param {*} aaa iterations
  * @returns {What} search space of {@link Path}s 
  */
-Each.each = function(...aaa) {
+Each.each = function(aaa) {
+
+    if(!Array.isArray(aaa)) aaa = Array.from(aaa);
 
     aaa = aaa.map(aa => aa[Symbol.iterator]? aa
             : [aa]);

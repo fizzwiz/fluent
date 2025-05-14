@@ -1,6 +1,6 @@
 import { Each } from "../core/Each.js";
 import { What } from "../core/What.js";
-import { Path } from "../util/Path.js";
+import { Path } from "../main/util/Path.js";
 import { Table } from "./Table.js";
 
 /**
