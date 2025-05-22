@@ -1,6 +1,6 @@
 {
     "name": "@fizzwiz/fluent",
-    "version": "0.0.0-0",
+    "version": "0.0.0-dev.0",
     "description": "Ensure your code aligns with your thoughts!",
     "repository": {
         "type": "git",
@@ -21,7 +21,7 @@
     "author": "roberto venditti <rvend@libero.it>",
     "files": [
         "README.md",
-        "trg/fluent.bundle.js",
+        "dist/fluent.bundle.js",
         "src/main/"
     ],
     "type": "module",
@@ -31,7 +31,7 @@
         "@babel/preset-env": "^7.22.5",
         "assert": "2.0.0",
         "babel-loader": "^9.1.2",
-        "mocha": "10.2.0",
+        "mocha": "^10.8.2",
         "path": "^0.12.7",
         "webpack": "^5.88.0",
         "webpack-cli": "^5.1.4"
@@ -45,6 +45,5 @@
         "build": "webpack --mode production"
     },
     "dependencies": {
-        "n-readlines": "^1.0.1"
     }
 }

@@ -1,5 +1,5 @@
-import { Each } from "../../../main/core/Each.js";
-import { What } from "../../../main/core/What.js";
+import { Each } from "../core/Each.js";
+import { What } from "../core/What.js";
 import { Scope } from "./Scope.js";
 
 /**

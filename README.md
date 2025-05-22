@@ -34,7 +34,7 @@ Each package corresponds to a directory, and each file within defines a single c
 
 ### ✅ Node.js (ES Modules)
 
-Install via npm (once published):
+Install via npm:
 
 ```bash
 npm install @fizzwiz/fluent
