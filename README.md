@@ -48,7 +48,7 @@ import { Each } from '@fizzwiz/fluent/core/Each.js';
 const each = Each.of('a', 'b');
 ```
 
-✅ Browser (via CDN)
+### ✅ Browser (via CDN)
 
 Include the bundle in your HTML:
 
@@ -62,12 +62,12 @@ Include the bundle in your HTML:
 
 This will expose a global fluent object with access to all features.
 
-📄 Documentation
+## 📄 Documentation
 
-Full API jsDocs:
+### Full API jsDocs:
 👉 https://fizzwiz.github.io/fluent
 
-📝 Blog & Tutorials
+### 📝 Blog & Tutorials
 
 Explore concepts, tutorials, and deep dives:
 👉 https://fluent-js.blogspot.com
