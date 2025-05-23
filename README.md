@@ -53,7 +53,7 @@ const each = Each.of('a', 'b');
 Include the bundle in your HTML:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/fizzwiz/fluent@latest/dist/fluent.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fizzwiz/fluent@v0.0.0-dev.1/dist/fluent.bundle.js"></script>
 <script>
   const each = fluent.Each.of('a', 'b');
 </script>
