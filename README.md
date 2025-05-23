@@ -4,16 +4,12 @@
 
 `@fizzwiz/fluent` is a modern JavaScript library designed to bring elegant syntactic sugar to your code. It simplifies the expression of complex logic and promotes intuitive, readable, and concise development — with zero learning curve.
 
----
-
 ## ✨ Features
 
 - 🧠 **Thoughtful API** – Code reads like natural language.
 - 🧩 **Modular Structure** – Organized into logical packages.
 - 🚀 **Dual Environment Support** – Use in Node.js or directly in the browser.
 - 📚 **Zero Learning Curve** – Intuitive by design.
-
----
 
 ## 📦 Package Structure
 
@@ -27,8 +23,6 @@ The library is organized into four main packages:
 | `util`   | Utility functions and general-purpose helpers     |
 
 Each package corresponds to a directory, and each file within defines a single class.
-
----
 
 ## 🛠️ Usage
 
@@ -62,12 +56,15 @@ Include the bundle in your HTML:
 
 This will expose a global fluent object with access to all features.
 
+
 ## 📄 Documentation
 
-### Full API jsDocs:
-👉 https://fizzwiz.github.io/fluent
+### 📘 **API Reference**
 
-### 📝 Blog & Tutorials
+Dive into the full API with jsDocs:  
+🔗 [fizzwiz.github.io/fluent](https://fizzwiz.github.io/fluent)
 
-Explore concepts, tutorials, and deep dives:
-👉 https://fluent-js.blogspot.com
+### 🧠 **Concepts, Guides & Tutorials**
+
+Learn how to think and build fluently with examples, explanations, and real-world use cases:  
+🔗 [fluent-js.blogspot.com](https://fluent-js.blogspot.com)
