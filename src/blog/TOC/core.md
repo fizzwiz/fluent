@@ -1,4 +1,4 @@
-# 📦 The `core` Package
+# 🧬 The `core` Package
 
 The `core` package provides the foundational abstractions of the library, centered around two abstract classes: `Each` and `What`.
 
@@ -18,7 +18,7 @@ The `core` package provides the foundational abstractions of the library, center
 
 By default, calling these methods without overriding them will raise an `"abstract method!"` error.
 
-## 🧰 Shared Operations
+## 🤝 Shared Operations
 
 Despite targeting different concepts—iteration and computation—`Each` and `What` expose a **shared interface** for:
 - **Restriction**: Filtering results using predicates (`which`, `if`, `when`)
@@ -27,7 +27,7 @@ Despite targeting different concepts—iteration and computation—`Each` and `W
 
 This design makes the two classes interoperable and composable, forming the backbone for building expressive data transformations and functional pipelines.
 
-## 🔄 Design Philosophy
+## 🧭 Design Philosophy
 
 Rather than isolating iteration and computation, the `core` package unifies them under a consistent API. Whether you're dealing with sequences (`Each`) or mappings (`What`), you use the same verbs to transform and compose behavior.
 

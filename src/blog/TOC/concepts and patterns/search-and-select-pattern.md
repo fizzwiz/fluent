@@ -46,7 +46,7 @@ Sound familiar? That’s exactly what the `Each` and `What` classes are built to
 
 ## 📦 Enter `@fizzwiz/sorted.js`
 
-The companion library [`@fizzwiz/sorted.js`](#) gives you a suite of flexible queues — each reflecting a different search strategy.
+The companion library [`@fizzwiz/sorted.js`](https://sorted-js.blogspot.com) gives you a suite of flexible queues — each reflecting a different search strategy.
 
 Every queue supports:
 

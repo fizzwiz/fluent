@@ -1,4 +1,4 @@
-# 📘 `What` Class — Functional Programming with `@fizzwiz/fluent`
+# 🔶 `What` Class — Functional Programming with `@fizzwiz/fluent`
 
 The `What` class defines a functional interface that supports both evaluation and definition of function values based on argument patterns. It parallels the role of the `Each` class for iterables, providing powerful methods to compose, restrict, and transform functions.
 
@@ -184,7 +184,3 @@ console.log(partial.what(2, 3)); // Outputs: 15 => 2 + 10 + 3
 const f = What.as(({ a }) => a * 2).self(['a'], 'b');
 console.log(f.what({ a: 5 })); // -> { a: 5, b: 10 }
 ```
-
----
-
-For further examples and use-cases, see [my blog post](https://yourblog.example.com/what-class-usage-guide).

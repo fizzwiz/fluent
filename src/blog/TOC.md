@@ -1,69 +1,75 @@
 # 📚 Table of Contents
 
-Welcome! This page is your guide to the most relevant posts and pages from the `@fizzwiz/fluent` blog. Whether you're just getting started or diving deep into advanced topics, use this as your map.
+Welcome! This page is your guide to the most relevant posts and documentation for the `@fizzwiz/fluent` library.  
+Whether you're just getting started or exploring advanced topics, use this as your map.
 
 ---
 
 ## 🚀 Getting Started
 
-- [About This Blog](#)  
-  What to expect, who it’s for, and how posts are structured.
+- [Welcome](https://fluent-js.blogspot.com/p/welcome.html)  
+  What to expect, who it’s for, and how the posts are structured.
 
-- [Quick Start](#)  
-  How to install and use the library.
+- [Quick Start](https://fluent-js.blogspot.com/p/quick-start.html)  
+  How to install the library and write your first fluent expressions.
 
-- [Introduction](#)  
-  Introducing the library and its motivation.
+- [Introduction](https://fluent-js.blogspot.com/p/intro.html)  
+  A deeper look at the motivation, philosophy, and vision behind the library.
 
-- [Manifest](#)
-  Manifest of intents
-
-- [Contribute And Feedback](#)
-  We are waiting for you
+- [Contribute & Feedback](https://fluent-js.blogspot.com/p/contribute-feedback.html)  
+  Share your thoughts, ask questions, or get involved in shaping the project.
 
 ---
 
 ## 📄 API Overview
 
-- [The Core Package](#)  
-  Core classes and fluent constructs.
+### 🧬 [The Core Package](https://fluent-js.blogspot.com/p/core-package.html)  
+Foundational classes and composable constructs for fluent iteration.
 
-- [The Util Package](#)  
-  Utility helpers that complement the fluent API.
+- ➰ [The Each Class](https://fluent-js.blogspot.com/p/each-class.html)  
+  Abstract, lazy, and composable iteration.
+
+- 🔶 [The What Class](https://fluent-js.blogspot.com/p/what-class.html)  
+  Declarative search spaces and functional composition.
+
+### 🧰 [The Util Package](https://fluent-js.blogspot.com/p/util-package.html)  
+Helpers that manage state, context, and structure.
+
+- 🌲 [The Scope Class](https://fluent-js.blogspot.com/p/scope-class.html)  
+  Tree-like context manager for storing and retrieving data.
+
+- 🦶 [The Path Class](https://fluent-js.blogspot.com/p/path-class.html)  
+  Immutable paths that represent branching histories in search spaces.
 
 ---
 
 ## 🧠 Concepts & Patterns
 
-- [The Search-and-Select Pattern](#)  
-  A look at the design philosophy behind the library’s core pattern — and how it simplifies code.
+- [Bridging Natural Language and Code](https://fluent-js.blogspot.com/2025/05/bridging-natural-language-and-code.html)  
+  How expressive patterns make iteration more readable and intuitive.
 
-- [if()](#)  
-  Where the reasoning starts.
+- [The Search-and-Select Pattern](https://fluent-js.blogspot.com/2025/05/searhc-and-select-pattern.html)  
+  A high-level pattern for combining search and selection in a fluent way.
 
-- [which()](#)  
-  Filtering candidate solutions.
-
-- [if() vs which()](#)  
-  What's the difference?
-
-- [Early vs Late Restriction](#)  
-  Should you restrict the search space (`What`) or the search process (`Each`)?
+- [Early vs Late Restriction](https://fluent-js.blogspot.com/2025/05/early-vs-late-restriction.html)  
+  Restricting the **space** (`What`) vs. filtering the **results** (`Each`) — and why timing matters.
 
 ---
 
-## 🎯 Practical Examples
-
-- [Combinatorics](#)  
-  A minimal example showing how to generate combinations of items.
+## 🎯 Practical Examples  
+*Coming soon — stay tuned!*
 
 ---
 
 ## 📣 Releases & Updates
 
-- [📦 v0.0.0-0 — The First Brick](#)  
-  Introducing the core of the library.
+- [🧭 Road Map](https://fluent-js.blogspot.com/2025/05/road-map.html)  
+  Development milestones, future plans, and release goals.
+
+- [📦 v0.0.0-dev.1 — The First Brick](https://fluent-js.blogspot.com/2025/05/v000-dev1.html)  
+  Launching the initial pre-release with core concepts like `Each`, `What`, and `Path`.
 
 ---
 
-*This page will be updated regularly. Bookmark it to stay oriented as the project evolves!*
+> 📌 *This page will be updated regularly — bookmark it to stay oriented as the project evolves!*
+

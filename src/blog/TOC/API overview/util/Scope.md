@@ -12,7 +12,7 @@ The `Scope` class is a foundational utility in the `util` package. It defines a 
 
 Each `Scope` acts as a **named tree node**, where its `children` object stores child scopes keyed by name.
 
-## 🔧 Mutating Methods
+## 🛠️ Mutating Methods
 
 All mutating methods return the `Scope` instance itself to allow **method chaining**.
 
@@ -37,8 +37,8 @@ scope.letParent(parent).let('x', 10).letChild('sub', childScope);
 | `root()`      | Returns the root of the Scope tree.  |
 | `ancestors()` | Iterates through all ancestor Scopes.|
 
-> 🔍 Note: **Downward navigation is intentionally omitted**, for reasons explained in the upcoming Use Cases section of the documentation.
+> 🔍 Note: **Downward navigation is intentionally omitted**, for reasons explained in an upcoming post.
 
 ## 💡 Summary
 
-`Scope` is a flexible, tree-based structure ideal for representing nested environments, symbol tables, or computation contexts. Its method chaining and upward traversal capabilities make it a powerful building block for more advanced constructs like `Path` and `Thought`.
+`Scope` is a flexible, tree-based structure ideal for representing nested environments, symbol tables, or computation contexts. Its method chaining and upward traversal capabilities make it a powerful building block for more advanced constructs like `Path`.

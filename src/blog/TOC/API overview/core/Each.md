@@ -1,4 +1,4 @@
-# 📘 `Each` Class — Abstract Iteration with @fizzwiz/fluent
+# ➰ `Each` Class — Abstract Iteration with @fizzwiz/fluent
 
 The Each class represents an abstract, composable, and lazy iterable. It defines an `iterator()` method and enables expressive operations for building and manipulating iterations — without eagerly executing them.
 
@@ -149,5 +149,3 @@ With Each, your iteration logic can match the way you think — clear, composabl
 
 
 ---
-
-For further examples and use-cases, see [my blog post](https://yourblog.example.com/what-class-usage-guide).

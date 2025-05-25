@@ -1,4 +1,4 @@
-# Quick Start Guide: @fizzwiz/fluent
+# 🚀 Quick Start Guide: @fizzwiz/fluent
 
 Welcome to `@fizzwiz/fluent`, a library for abstract and composable iteration and functional logic in JavaScript.
 
@@ -59,17 +59,18 @@ const customSequence = Each.of(1, 2)
 
 ## 📚 Explore More
 
-✨ Introduction to the Library
-A broader overview of the design and philosophy at: [Intro](/p/Intro)
+### ✨ Introduction to the Library
+A broader overview of the design and philosophy at: [Intro](https://fluent-js.blogspot/p/Intro.html)
 
-📄 Full API Reference
+### 📄 Full API Reference
 Auto-generated API documentation is available at: [GitHub Pages](https://fizzwiz.github.io/fluent)
 
-🧾 GitHub Repository
-View source, open issues, or contribute.
+### 🧾 GitHub Repository
+View source, open issues, or contribute at: [GitHub](https://github.com/fizzwiz/fluent)
 
 ## 💬 Need Help?
 
 Feel free to leave a comment on the blog.
 
-    “Make your code align with your thoughts!” — @fizzwiz/fluent
+  “Make your code align with your thoughts!”  
+— `@fizzwiz ✨`

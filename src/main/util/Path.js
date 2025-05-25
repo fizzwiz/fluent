@@ -3,13 +3,13 @@ import { What } from "../core/What.js";
 import { Scope } from "./Scope.js";
 
 /**
- * A {@link Path} is an immutable aggregation of items implemented through the properties:
+ * A {@link Path} is a leaf tree node {@link Scope} with additional three properties:
  * 
  * - [prev]{@link Path#prev}
  * - [last]{@link Path#last}
  * - [length]{@link Path#length}
  * 
- * It can be instatiated either from its properties or from its items:
+ * It can be instatiated either from its properties or from a list of items:
  * 
  * - [of()]{@link Path.of}
  * 
@@ -20,10 +20,9 @@ import { Scope } from "./Scope.js";
  * 
  * create new {@link Path}s without modifying the source {@link Path}
  * 
- * Because of its structure, the {@link Path} can be iterated only backward, through its methods:
+ * As a {@link Scope} the {@link Path} can be iterated only backward, through the method:
  * 
- * - [backwardIteration()]{@link Path#backPaths}
- * - [backtrace()]{@link Path#backSteps}
+ * - [ancestors()]{@link Scope#ancestors}
  * 
  * To iterate forward, the {@link Path} must before be converted into an array, through the method:
  * 
@@ -113,7 +112,42 @@ export class Path extends Scope {
 	get length() {
 		return this._length
 	}
-	
+
+	/**
+	 * Attempts to bind a value to a key in this Path.
+	 * 
+	 * @param {*} key - The key to bind.
+	 * @param {*} value - The value to associate with the key.
+	 * @throws {Error} Always throws because `Path` is immutable.
+	 * @override
+	 */
+	let(key, value) {
+		throw new Error("A Path is immutable!");
+	}
+
+	/**
+	 * Attempts to bind a child Scope or Path to this Path under a given name.
+	 *
+	 * @param {string} name - The name under which to bind the child.
+	 * @param {*} child - The child Scope or Path to bind.
+	 * @throws {Error} Always throws because `Path` is immutable.
+	 * @override
+	 */
+	letChild(name, child) {
+		throw new Error("A Path is immutable!");
+	}
+
+	/**
+	 * Attempts to remove a key binding from this Path.
+	 *
+	 * @param {*} key - The key to forget/remove.
+	 * @throws {Error} Always throws because `Path` is immutable.
+	 * @override
+	 */
+	forget(key) {
+		throw new Error("A Path is immutable!");
+	}
+
 	/**
 	 * Check if this {@Path} is empty
 	 * @returns {Boolean}
