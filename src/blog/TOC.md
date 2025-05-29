@@ -29,7 +29,7 @@ Foundational classes and composable constructs for fluent iteration.
 - ➰ [The Each Class](https://fluent-js.blogspot.com/p/each-class.html)  
   Abstract, lazy, and composable iteration.
 
-- 🔶 [The What Class](https://fluent-js.blogspot.com/p/what-class.html)  
+- ❓ [The What Class](https://fluent-js.blogspot.com/p/what-class.html)  
   Declarative search spaces and functional composition.
 
 ### 🧰 [The Util Package](https://fluent-js.blogspot.com/p/util-package.html)  

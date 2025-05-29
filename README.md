@@ -37,7 +37,7 @@ npm install @fizzwiz/fluent
 Then use:
 
 ```javascript
-import { Each } from '@fizzwiz/fluent/core/Each.js';
+import { Each } from '@fizzwiz/fluent';
 
 const each = Each.of('a', 'b');
 ```
@@ -54,7 +54,7 @@ Include the bundle in your HTML:
 </script>
 ```
 
-This will expose a global fluent object with access to all features.
+This will expose a global `fluent` object with access to all features.
 
 
 ## 📄 Documentation
@@ -67,4 +67,4 @@ Dive into the full API with jsDocs:
 ### 🧠 **Concepts, Guides & Tutorials**
 
 Learn how to think and build fluently with examples, explanations, and real-world use cases:  
-🔗 [fluent-js.blogspot.com](https://fluent-js.blogspot.com)
+🔗 [fluent-js.blogspot.com](https://fluent.blog.fizzwiz.cloud)
