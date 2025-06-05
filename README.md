@@ -67,4 +67,4 @@ Dive into the full API with jsDocs:
 ### 🧠 **Concepts, Guides & Tutorials**
 
 Learn how to think and build fluently with examples, explanations, and real-world use cases:  
-🔗 [fluent-js.blogspot.com](https://fluent.blog.fizzwiz.cloud)
+🔗 [fluent.blog.fizzwiz.cloud](https://fluent.blog.fizzwiz.cloud)

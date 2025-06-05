@@ -5,4 +5,3 @@ export { core, util };
 export { Each, What } from './core/index.js';
 export { Scope, Path } from './util/index.js';
 
-
