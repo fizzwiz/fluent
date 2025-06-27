@@ -2,9 +2,41 @@
 <html>
     <head>
 <script src="https://cdn.jsdelivr.net/gh/fizzwiz/fluent@v0.0.0-dev.1/dist/fluent.bundle.js"></script>
-
+<style>
+    span.star {
+      font-size: 50px;
+      margin-right: 10px;
+      display: inline-block;
+      width: 60px;
+      text-align: center;
+    }
+  </style>
     </head>
     <body>
+
+          
+          <div>
+            <span class="star">🌟</span><span>Normal colored star</span><br>
+          
+            <span class="star" style="filter: grayscale(100%)">🌟</span><span>Grayscale(100%)</span><br>
+          
+            <span class="star" style="filter: blur(2px)">🌟</span><span>Blur(2px)</span><br>
+          
+            <span class="star" style="filter: brightness(0.5)">🌟</span><span>Brightness(0.5)</span><br>
+          
+            <span class="star" style="filter: contrast(200%)">🌟</span><span>Contrast(200%)</span><br>
+          
+            <span class="star" style="filter: drop-shadow(2px 2px 2px gray)">🌟</span><span>Drop-shadow</span><br>
+          
+            <span class="star" style="filter: hue-rotate(90deg)">🌟</span><span>Hue-rotate(90deg)</span><br>
+          
+            <span class="star" style="filter: invert(100%)">🌟</span><span>Invert(100%)</span><br>
+          
+            <span class="star" style="filter: saturate(300%)">🌟</span><span>Saturate(300%)</span><br>
+          
+            <span class="star" style="filter: sepia(100%)">🌟</span><span>Sepia(100%)</span><br>
+          </div>
+          
 <script>        
   const result = fluent.Each.of(1, 2, 3).toArray();
   console.log(result); // [1, 2, 3] – example usage if `fluent` is exposed this way
