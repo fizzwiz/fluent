@@ -1,5 +1,4 @@
 import { Each } from "../core/Each.js";
-import { What } from "../core/What.js";
 
 /**
  * Scope represents a tree node structure that supports hierarchical storage and lookup of named properties and child Scopes.

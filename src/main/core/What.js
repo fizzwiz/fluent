@@ -1,5 +1,5 @@
 import { Each } from "./Each.js";
-import {Path} from '../util/Path.js';
+import { Path } from '../util/Path.js';
 
 /**
  * The `What` class provides a functional abstraction layer for deferred, composable logic execution.
