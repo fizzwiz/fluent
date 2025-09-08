@@ -1,425 +1,517 @@
 import { What } from './What.js';
+import { AsyncEach } from './AsyncEach.js';
 
 /**
- * The `Each` class implements an abstract, immutable, iterable interface over items.
- * It provides static and instance methods to construct, transform, and evaluate iterable sequences.
- * Every instance is defined by its implementation of the `[Symbol.iterator]` method.
+ * The `Each` class implements an abstract, immutable, **lazy iterable** interface.
  *
- * @author Roberto Venditti
+ * Each instance is defined by its `[Symbol.iterator]()` implementation, and the class
+ * provides static and instance methods to construct, transform, and evaluate iterable sequences.
+ *
+ * `Each` shares the same fluent semantic API as {@link What} and {@link AsyncEach}, exposing
+ * the 9 core methods: `if()`, `sthen()`, `else()`, `which()`, `when()`, `match()`, `each()`, `self()`, and `what()`.
+ *
+ * This enables declarative and composable pipelines over synchronous sequences with lazy evaluation.
+ *
+ * @example
+ * const seq = Each.of(1, 2, 3)
+ *   .sthen(x => x * 2)
+ *   .if(x => x > 2);
+ *
+ * console.log([...seq]); // => [4, 6]
+ *
  * @see {@link What}
+ * @see {@link AsyncEach}
  * @class
  */
 export class Each {
 
-    /**
-     * Abstract iterator method. All instances must override this method.
-     * @abstract
-     * @returns {Iterator<*>}
-     */
-    [Symbol.iterator]() {
-        throw 'abstract method!';
-    }
+  /**
+   * Abstract iterator method.
+   * All subclasses or constructed instances must override this method.
+   *
+   * @abstract
+   * @returns {Iterator}
+   */
+  [Symbol.iterator]() {
+    throw 'abstract method!';
+  }
 
-    /**
-     * Converts this `Each` instance into an array.
-     * @returns {Array<*>}
-     */
-    toArray() {
-        return Array.from(this);
-    }
+  // -----------------------
+  // Construction utilities
+  // -----------------------
 
-    /**
-     * Compares this `Each` with another for deep equality.
-     * @param {Iterable<*>} that
-     * @returns {boolean}
-     */
-    equals(that) {
-        return Each.equal(this, that);
-    }
-
-    /**
-     * Filters this `Each` using a predicate.
-     * @param {Function | What} [p=(item) => item !== undefined]
-     * @returns {Each}
-     */
-    if(p = item => item !== undefined) {
-        return Each.if(this, p);
-    }
-
-    /**
-     * Alias for `if`. Distinct meaning in the context of `What`.
-     * @param {Function | What} [p=(item) => item !== undefined]
-     * @returns {Each}
-     */
-    which(p = item => item !== undefined) {
-        return Each.which(this, p);
-    }
-
-    /**
-     * Maps a function over each item.
-     * @param {Function | What} f - Mapping function.
-     * @returns {Each}
-     */
-    then(f) {
-        return Each.then(this, f);
-    }
-
-    /**
-     * Concatenates this `Each` with another iterable.
-     * @param {Iterable<*>} [that=undefined]
-     * @returns {Each}
-     */
-    else(that = undefined) {
-        return that === undefined ? Each.else(this) : Each.else(Each.of(this, Each.as(that)));
-    }
-
-    /**
-     * Zips this `Each` with another iterable.
-     * @param {Iterable<*>} [that=undefined]
-     * @returns {Each}
-     */
-    match(that = undefined) {
-        return that === undefined ? Each.match(...this) : Each.match(this, Each.as(that));
-    }
-
-    /**
-     * Computes the Cartesian product of this `Each` with another.
-     * @param {Iterable<*>} [that=undefined]
-     * @returns {Each | What<Path>}
-     */
-    each(that = undefined) {
-        if (that === undefined) return Each.each(...this);
-
-        const aa = this;
-        const got = new Each();
-
-        got[Symbol.iterator] = function* () {
-            for (let a of aa) {
-                for (let b of Each.as(that)) {
-                    yield [a, b];
-                }
-            }
-        };
-
-        return got;
-    }
-
-    /**
-     * Slices the iteration when the predicate (or index) triggers.
-     * @param {Function | number} p - Predicate or index.
-     * @param {boolean} [start=true] - Whether to start or end at `p`.
-     * @param {boolean} [inclusive=start] - Include the boundary element.
-     * @returns {Each}
-     */
-    when(p, start = true, inclusive = start) {
-        return Each.when(this, p, start, inclusive);
-    }
-
-    /**
-     * Produces an infinite repetition of this `Each` instance.
-     * @returns {Each<Each>}
-     */
-    self() {
-        return Each.self(this);
-    }
-
-    /**
-     * Reduces the iterable using an accumulator function.
-     * @param {Function} [op=undefined] - Binary operation.
-     * @param {*} [start=undefined] - Initial value.
-     * @returns {*}
-     */
-    what(op = undefined, start = undefined) {
-        return Each.what(this, op, start);
-    }
-  
-    /**
-     * Converts a value or iterable to a `Each` instance.
-
-     * @static
-     * @param {undefined | any | Iterable<any>} [items=undefined] Items to convert.
-     * @returns {Each} A new `Each` instance.
-     */
-    static as(items) {
-      if (items === undefined) {
-        return Each.of();
-      } else if (items instanceof Each) {
-        return items;
-      } else if (items[Symbol.iterator]) {
-        const got = new Each();
-        got[Symbol.iterator] = items[Symbol.iterator].bind(items);
-        return got;
-      } else {
-        return Each.of(items);
-      }
-    }
-  
-    /**
-     * Creates a `Each` from a list of items.
-
-     * @static
-     * @param {...any} items Items to include.
-     * @returns {Each} A new `Each` instance.
-     */
-    static of(...items) {
-      return Each.as(items);
-    }
-  
-    /**
-     * Creates a potentially infinite `Each` starting from an initial value, generating next values using a function.
-
-     * @static
-     * @param {*} start Initial value.
-     * @param {Function} next Function to generate next value.
-     * @returns {Each} A new `Each` instance.
-     */
-    static along(start, next) {
+  /**
+   * Converts a value or iterable into an `Each` instance.
+   *
+   * - `undefined` → an empty `Each`.
+   * - `Each` instance → returned as-is.
+   * - iterable → wrapped lazily.
+   * - other values → wrapped in a single-element `Each`.
+   *
+   * @static
+   * @param {any|Iterable|undefined} items Items to convert.
+   * @returns {Each}
+   *
+   * @example
+   * Each.as([1, 2, 3]); // iterable
+   * Each.as(5);         // single element
+   * Each.as();          // empty
+   */
+  static as(items) {
+    if (items === undefined) {
+      return Each.of();
+    } else if (items instanceof Each) {
+      return items;
+    } else if (items[Symbol.iterator]) {
       const got = new Each();
-  
+      got[Symbol.iterator] = items[Symbol.iterator].bind(items);
+      return got;
+    } else {
+      const got = new Each();
       got[Symbol.iterator] = function* () {
-        let current = start;
-        while (current) {
-          yield current;
-          current = What.what(next, current);
-        }
+        yield items;
       };
-  
       return got;
     }
+  }
 
-    /**
-     * Checks deep equality between two iterables.
-     * @param {Iterable<any>} aa
-     * @param {Iterable<any>} bb
-     * @returns {boolean}
-     */
-    static equal(aa, bb) {
-        if ((typeof aa !== 'string') && Each.isIterable(aa)
-            && (typeof bb !== 'string') && Each.isIterable(bb)) {
+  /**
+   * Creates an `Each` from a fixed list of items.
+   *
+   * @static
+   * @param {...any} items Items to include.
+   * @returns {Each}
+   *
+   * @example
+   * const seq = Each.of(1, 2, 3);
+   * [...seq]; // [1, 2, 3]
+   */
+  static of(...items) {
+    const got = new Each();
+    got[Symbol.iterator] = function* () {
+      for (const item of items) yield item;
+    };
+    return got;
+  }
 
-            const ait = aa[Symbol.iterator]();
-            const bit = bb[Symbol.iterator]();
+  /**
+   * Creates a potentially infinite `Each` sequence.
+   *
+   * Starts with an initial value and repeatedly applies a function
+   * to produce the next value.
+   *
+   * @static
+   * @param {*} start Initial value.
+   * @param {Function} next Function producing the next value.
+   * @returns {Each}
+   *
+   * @example
+   * const naturals = Each.along(0, n => n + 1);
+   * console.log([...naturals.when(x => x > 3)]); // [4, 5, 6, ...]
+   */
+  static along(start, next) {
+    const got = new Each();
+    got[Symbol.iterator] = function* () {
+      let current = start;
+      while (current) {
+        yield current;
+        current = What.what(next, current);
+      }
+    };
+    return got;
+  }
 
-            while (true) {
-                const a = ait.next();
-                const b = bit.next();
+  // -----------------------
+  // Conversion & equality
+  // -----------------------
 
-                if (a.done || b.done) return a.done === b.done;
-                if (!Each.equal(a.value, b.value)) return false;
-            }
+  /**
+   * Converts this `Each` to a plain array.
+   * @returns {Array}
+   */
+  toArray() {
+    return Array.from(this);
+  }
+
+  /**
+   * Compares this `Each` with another iterable for deep equality.
+   * @param {Iterable} that Another iterable.
+   * @returns {boolean}
+   */
+  equals(that) {
+    return Each.equal(this, that);
+  }
+
+  /**
+   * Checks deep equality between two iterables (or values).
+   *
+   * @static
+   * @param {Iterable|any} aa
+   * @param {Iterable|any} bb
+   * @returns {boolean}
+   */
+  static equal(aa, bb) {
+    if ((typeof aa !== 'string') && Each.isIterable(aa)
+        && (typeof bb !== 'string') && Each.isIterable(bb)) {
+
+      const ait = aa[Symbol.iterator]();
+      const bit = bb[Symbol.iterator]();
+
+      while (true) {
+        const a = ait.next();
+        const b = bit.next();
+        if (a.done || b.done) return a.done === b.done;
+        if (!Each.equal(a.value, b.value)) return false;
+      }
+    } else {
+      return aa === bb;
+    }
+  }
+
+  /**
+   * Checks if an object is iterable.
+   *
+   * @private
+   * @static
+   * @param {*} obj
+   * @returns {boolean}
+   */
+  static isIterable(obj) {
+    return obj != null && typeof obj[Symbol.iterator] === 'function';
+  }
+
+  // -----------------------
+  // Fluent methods
+  // -----------------------
+
+  /**
+   * Filters this `Each` with a predicate.
+   *
+   * @param {Function|What} [p=item => item !== undefined]
+   * @returns {Each}
+   */
+  if(p = item => item !== undefined) {
+    return Each.if(this, p);
+  }
+
+  /**
+   * Filters an iterable using a predicate.
+   *
+   * @static
+   * @param {Iterable} aa Input iterable.
+   * @param {Function} [p=item => item !== undefined]
+   * @returns {Each}
+   */
+  static if(aa, p = item => item !== undefined) {
+    return Each.which(aa, p);
+  }
+
+  /**
+   * Maps a function over each item.
+   *
+   * @param {Function|What} f Transformation function.
+   * @returns {Each}
+   */
+  sthen(f) {
+    return Each.sthen(this, f);
+  }
+
+  /**
+   * Safe mapping operation (like `then` but without clashing with Promises).
+   *
+   * @static
+   * @param {Iterable} aa Input iterable.
+   * @param {Function} f Mapping function `(item, index) => result`.
+   * @returns {Each}
+   *
+   * @example
+   * const doubled = Each.sthen([1, 2, 3], x => x * 2);
+   * [...doubled]; // [2, 4, 6]
+   */
+  static sthen(aa, f) {
+    const got = new Each();
+    got[Symbol.iterator] = function* () {
+      let i = 0;
+      for (let a of aa) yield What.what(f, a, i++);
+    };
+    return got;
+  }
+
+  /**
+   * Concatenates with another iterable or flattens one level.
+   *
+   * @param {Iterable} [that]
+   * @returns {Each}
+   */
+  else(that = undefined) {
+    return that === undefined
+      ? Each.else(this)
+      : Each.else(Each.of(this, Each.as(that)));
+  }
+
+  /**
+   * Flattens one level of nesting.
+   *
+   * @static
+   * @param {Iterable} aaa Iterable of iterables.
+   * @returns {Each}
+   */
+  static else(aaa) {
+    const got = new Each();
+    got[Symbol.iterator] = function* () {
+      for (let aa of aaa) {
+        if (aa[Symbol.iterator]) {
+          for (let a of aa) yield a;
         } else {
-            return aa === bb;
+          yield aa;
         }
-    }
-
-    /**
-     * Checks if an object is iterable.
-     * @param {*} obj
-     * @returns {boolean}
-     * @private
-     */
-    static isIterable(obj) {
-        return obj != null && typeof obj[Symbol.iterator] === 'function';
-    } 
-
-    /**
-     * Filters an iterable using a predicate.
-     * @static
-     * @param {Iterable<any>} aa The input iterable.
-     * @param {Function} [p=item => item !== undefined] Predicate function.
-     * @returns {Each} Filtered `Each` instance.
-     */
-    static if(aa, p = item => item !== undefined) {
-      return Each.which(aa, p);
-    }
-  
-    /**
-     * Filters items from an iterable using a predicate.
-     * @static
-     * @param {Iterable<any>} aa The input iterable.
-     * @param {Function} [p=item => item !== undefined] Predicate function.
-     * @returns {Each} Filtered `Each` instance.
-     */
-    static which(aa, p = item => item !== undefined) {
-      const got = new Each();
-      got[Symbol.iterator] = function* () {
-        let i = 0;
-        for (let a of aa) {
-          if (What.what(p, a, i++)) yield a;
-        }
-      };
-      return got;
-    }
-  
-    /**
-     * Yields the same iterable indefinitely.
-     * @static
-     * @param {Iterable<any>} aa The input iterable.
-     * @returns {Each} Infinite `Each` instance.
-     */
-    static self(aa) {
-      const got = new Each();
-      got[Symbol.iterator] = function* () {
-        while (true) yield aa;
-      };
-      return got;
-    }
-  
-    /**
-     * Maps a function over items in an iterable.
-     * @static
-     * @param {Iterable<any>} aa The input iterable.
-     * @param {Function} f Mapping function.
-     * @returns {Each} Transformed `Each` instance.
-     */
-    static then(aa, f) {
-      const got = new Each();
-      got[Symbol.iterator] = function* () {
-        let i = 0;
-        for (let a of aa) yield What.what(f, a, i++);
-      };
-      return got;
-    }
-  
-    /**
-     * Flattens a nested iterable by one level.
-     * @static
-     * @param {Iterable<any>} aaa Iterable of iterables.
-     * @returns {Each} Flattened `Each` instance.
-     */
-    static else(aaa) {
-      const got = new Each();
-      got[Symbol.iterator] = function* () {
-        for (let aa of aaa) {
-          if (aa[Symbol.iterator]) {
-            for (let a of aa) yield a;
-          } else {
-            yield aa;
-          }
-        }
-      };
-      return got;
-    }
-  
-    /**
-     * Zips multiple iterables together.
-     * @static
-     * @param {...Iterable<any>} aaa Input iterables.
-     * @returns {Each<Array<any>>} Zipped `Each` instance.
-     */
-    static match(...aaa) {
-      const got = new Each();
-      got[Symbol.iterator] = function* () {
-        const iit = aaa.map(aa => aa[Symbol.iterator]());
-        while (true) {
-          const next = iit.map(it => it.next());
-          if (next.some(entry => entry.done)) break;
-          yield next.map(entry => entry.value);
-        }
-      };
-      return got;
-    }
-  
-    /**
-     * Computes the Cartesian product of multiple iterables, returned as a `What` instance.
-     *
-     * Instead of eagerly generating all combinations, this method returns a `What` function
-     * that incrementally extends a given path. For a path of length `l`, it multiplies it
-     * with the elements of the `l`-th iterable (`aaa[l]`). This lazy, functional form allows
-     * selective traversal and early restriction of the Cartesian space without computing the
-     * entire product upfront.
-     *
-     * @static
-     * @param {...Iterable<any>} aaa Input iterables representing the Cartesian factors.
-     * @returns {What} A `What` function that builds the Cartesian product incrementally.
-     */
-    static each(...aaa) {
-      aaa = aaa.map(aa => aa[Symbol.iterator] ? aa : [aa]);
-      const got = path => path.length < aaa.length ? path.across(aaa[path.length]) : Each.of();
-      return What.as(got);
-    }
-  
-    /**
-     * Slices an iterable based on a predicate or index.
-
-     * @static
-     * @param {Iterable<any>} aa The input iterable.
-     * @param {Function|number} p Predicate function or index.
-     * @param {boolean} [start=true] Whether to start or end slicing at match.
-     * @param {boolean} [inclusive=start] Whether to include the matched item.
-     * @returns {Each} Sliced `Each` instance.
-     */
-    static when(aa, p, start = true, inclusive = start) {
-      if (typeof p === 'number') {
-        const index = p;
-        p = (_, i) => i === index;
       }
-  
-      const got = new Each();
-  
-      const toStart = function* () {
-        let i = 0, started = false;
-        for (let a of aa) {
-          if (started) {
-            yield a;
-          } else if (What.what(p, a, i)) {
-            started = true;
-            if (inclusive) yield a;
-          }
-          i++;
-        }
-      };
-  
-      const toEnd = function* () {
-        let i = 0, ended = false;
-        for (let a of aa) {
-          if (ended) break;
-          if (What.what(p, a, i)) {
-            ended = true;
-            if (inclusive) yield a;
-          } else {
-            yield a;
-          }
-          i++;
-        }
-      };
-  
-      got[Symbol.iterator] = start ? toStart : toEnd;
-      return got;
-    }
-  
-    /**
-     * Reduces an iterable to a single value.
+    };
+    return got;
+  }
 
-     * @static
-     * @param {Iterable<any>} aa The input iterable.
-     * @param {Function} [op=undefined] Reducer function.
-     * @param {*} [got=undefined] Initial accumulator value.
-     * @returns {*} Reduced value.
-     */
-    static what(aa, op, got) {
-      if (op) {
-        if (got === undefined) {
-          got = Each.what(aa);
-          aa = Each.when(aa, 1);
-        }
-        for (let next of aa) {
-          got = What.what(op, got, next);
-        }
-        return got;
-      } else {
-        for (let next of aa) return next;
+  /**
+   * Alias for {@link Each.if}, kept distinct for symmetry with {@link What}.
+   *
+   * @param {Function|What} [p=item => item !== undefined]
+   * @returns {Each}
+   */
+  which(p = item => item !== undefined) {
+    return Each.which(this, p);
+  }
+
+  /**
+   * Filters an iterable with a predicate.
+   *
+   * @static
+   * @param {Iterable} aa Input iterable.
+   * @param {Function} [p=item => item !== undefined]
+   * @returns {Each}
+   */
+  static which(aa, p = item => item !== undefined) {
+    const got = new Each();
+    got[Symbol.iterator] = function* () {
+      let i = 0;
+      for (let a of aa) {
+        if (What.what(p, a, i++)) yield a;
       }
-    }  
+    };
+    return got;
+  }
+
+  /**
+   * Slices this `Each` based on predicate or index.
+   *
+   * @param {Function|number} p Predicate or index.
+   * @param {boolean} [start=true] Start or end slice.
+   * @param {boolean} [inclusive=start] Include boundary element.
+   * @returns {Each|AsyncEach}
+   */
+  when(p, start = true, inclusive = start) {
+    return Each.when(this, p, start, inclusive);
+  }
+
+  /**
+   * Slices an iterable based on a predicate or index, or **bridges to asynchronous iteration**.
+   *
+   * - If `p` is a predicate function, yields items starting or ending where the predicate matches.
+   * - If `p` is a number, treats it as an index boundary for slicing.
+   * - If called **without arguments**, this method interprets the iterable as containing Promises
+   *   and returns an {@link AsyncEach} that yields their resolved values.  
+   *   This provides a natural bridge from a synchronous `Each` of Promises to an asynchronous
+   *   `AsyncEach` of values.
+   *
+   * @static
+   * @param {Iterable} aa Input iterable.
+   * @param {Function|number} [p] Predicate function or index boundary.
+   * @param {boolean} [start=true] Whether to start or end the slice at the matching element.
+   * @param {boolean} [inclusive=start] Whether to include the boundary element in the result.
+   * @returns {Each|AsyncEach} A sliced `Each`, or an `AsyncEach` if no arguments are provided.
+   *
+   * @example <caption>Slice by predicate</caption>
+   * const e = Each.of(1, 2, 3, 4, 5).when(x => x > 2);
+   * console.log([...e]); // [3, 4, 5]
+   *
+   * @example <caption>Slice by index</caption>
+   * const f = Each.of('a','b','c','d').when(2);
+   * console.log([...f]); // ['c','d']
+   *
+   * @example <caption>Bridge from promises to async iteration</caption>
+   * const g = Each.of(Promise.resolve(1), Promise.resolve(2)).when();
+   * for await (const v of g) {
+   *   console.log(v); // 1, then 2
+   * }
+   */
+
+  static when(aa, p, start = true, inclusive = start) {
+    if (p === undefined) {
+      const got = {};
+      got[Symbol.asyncIterator] = async function* () {
+        for (const a of aa) yield await a;
+      };
+      return AsyncEach.as(got);
+    }
+    if (typeof p === 'number') {
+      const index = p;
+      p = (_, i) => i === index;
+    }
+    const got = new Each();
+    const toStart = function* () {
+      let i = 0, started = false;
+      for (let a of aa) {
+        if (started) yield a;
+        else if (What.what(p, a, i)) {
+          started = true;
+          if (inclusive) yield a;
+        }
+        i++;
+      }
+    };
+    const toEnd = function* () {
+      let i = 0, ended = false;
+      for (let a of aa) {
+        if (ended) break;
+        if (What.what(p, a, i)) {
+          ended = true;
+          if (inclusive) yield a;
+        } else {
+          yield a;
+        }
+        i++;
+      }
+    };
+    got[Symbol.iterator] = start ? toStart : toEnd;
+    return got;
+  }
+
+  /**
+   * Zips this `Each` with another iterable.
+   *
+   * @param {Iterable} [that]
+   * @returns {Each}
+   */
+  match(that = undefined) {
+    return that === undefined ? Each.match(...this) : Each.match(this, Each.as(that));
+  }
+
+  /**
+   * Zips multiple iterables together.
+   *
+   * @static
+   * @param {...Iterable} aaa
+   * @returns {Each}
+   */
+  static match(...aaa) {
+    const got = new Each();
+    got[Symbol.iterator] = function* () {
+      const iit = aaa.map(aa => aa[Symbol.iterator]());
+      while (true) {
+        const next = iit.map(it => it.next());
+        if (next.some(entry => entry.done)) break;
+        yield next.map(entry => entry.value);
+      }
+    };
+    return got;
+  }
+
+  /**
+   * Computes the Cartesian product with another iterable.
+   *
+   * @param {Iterable} [that]
+   * @returns {Each|What}
+   */
+  each(that = undefined) {
+    if (that === undefined) return Each.each(...this);
+    const aa = this;
+    const got = new Each();
+    got[Symbol.iterator] = function* () {
+      for (let a of aa) {
+        for (let b of Each.as(that)) yield [a, b];
+      }
+    };
+    return got;
+  }
+
+  /**
+   * Computes the Cartesian product of multiple iterables (lazy).
+   *
+   * Returns a {@link What} function that incrementally extends a path.
+   *
+   * @static
+   * @param {...Iterable} aaa
+   * @returns {What}
+   */
+  static each(...aaa) {
+    aaa = aaa.map(aa => aa[Symbol.iterator] ? aa : [aa]);
+    const got = path => path.length < aaa.length ? path.across(aaa[path.length]) : Each.of();
+    return What.as(got);
+  }
+
+  /**
+   * Produces an infinite repetition of this `Each`.
+   *
+   * @returns {Each}
+   */
+  self() {
+    return Each.self(this);
+  }
+
+  /**
+   * Infinite repetition of an iterable.
+   *
+   * @static
+   * @param {Iterable} aa
+   * @returns {Each}
+   */
+  static self(aa) {
+    const got = new Each();
+    got[Symbol.iterator] = function* () {
+      while (true) yield aa;
+    };
+    return got;
+  }
+
+  /**
+   * Reduces this `Each` using an operation.
+   *
+   * @param {Function} [op]
+   * @param {*} [start]
+   * @returns {*}
+   */
+  what(op = undefined, start = undefined) {
+    return Each.what(this, op, start);
+  }
+
+  /**
+   * Reduces an iterable to a single value.
+   *
+   * @static
+   * @param {Iterable} aa
+   * @param {Function} [op]
+   * @param {*} [got]
+   * @returns {*}
+   */
+  static what(aa, op, got) {
+    if (op) {
+      if (got === undefined) {
+        got = Each.what(aa);
+        aa = Each.when(aa, 1);
+      }
+      for (let next of aa) got = What.what(op, got, next);
+      return got;
+    } else {
+      for (let next of aa) return next;
+    }
+  }
 }
 
 /**
- * 
  * Infinite natural numbers starting from 0.
+ *
  * @type {Each<number>}
  */
 Each.NATURAL = new Each();
 Each.NATURAL[Symbol.iterator] = function* () {
-    let i = 0;
-    while (true) yield i++;
+  let i = 0;
+  while (true) yield i++;
 };

@@ -4,7 +4,7 @@
     },
     
     "opts": {
-        "readme": "./HOME.md",
+        "readme": "./README.md",
         "destination": "./docs"
     },
 

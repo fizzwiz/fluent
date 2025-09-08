@@ -1,13 +1,21 @@
+import { Each } from './core/Each.js';
+import { AsyncEach } from './core/AsyncEach.js';
+import { What } from './core/What.js';
+import { Scope } from './util/Scope.js';
+import { Path } from './util/Path.js';
+
+export { Each, AsyncEach, What, Scope, Path };
+
 /**
- * The `core` module defines two fundamental classes for declarative, fluent programming:
+ * The `core` module defines three fundamental classes for declarative, fluent programming:
  *
- * - {@link Each}: Represents a chainable, symbolic structure for defining and refining iterations.
- * - {@link What}: Represents a fluent interface for composing and transforming functions. 
+ * - {@link Each}: A lazy, composable iterable abstraction for synchronous sequences.
+ * - {@link AsyncEach}: A lazy, composable iterable abstraction for asynchronous sequences,
+ *   mirroring the {@link Each} class in the Promise domain.
+ * - {@link What}: A fluent interface for composing and transforming functions declaratively.
  *
  * @module core
  */
-export { Each } from './core/Each.js';
-export { What } from './core/What.js';
 
 /**
  * The `util` module provides supporting structures that enhance expressiveness and traceability:
@@ -17,5 +25,3 @@ export { What } from './core/What.js';
  *
  * @module util
  */
-export { Scope } from './util/Scope.js';
-export { Path } from './util/Path.js';

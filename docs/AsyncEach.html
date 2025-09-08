@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: What</title>
+    <title>JSDoc: Class: AsyncEach</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: What</h1>
+    <h1 class="page-title">Class: AsyncEach</h1>
 
     
 
@@ -28,17 +28,24 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>What<span class="signature">()</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>AsyncEach<span class="signature">()</span><span class="type-signature"></span></h2>
         
-            <div class="class-description"><p>The <code>What</code> class provides a <strong>functional abstraction layer</strong> for fluent, composable logic.</p>
-<p>Integrates seamlessly with <a href="Each.html"><code>Each</code></a> and <a href="AsyncEach.html"><code>AsyncEach</code></a> for declarative pipelines.
-Each instance is:</p>
+            <div class="class-description"><p>The <code>AsyncEach</code> class implements a lazy, composable, <strong>asynchronous iterable</strong> interface.</p>
+<p>Each instance is defined by its <code>[Symbol.asyncIterator]()</code> implementation.<br>
+It provides static and instance methods to construct, transform, and evaluate async sequences.</p>
+<p><code>AsyncEach</code> shares the same fluent API as <a href="What.html"><code>What</code></a> and <a href="Each.html"><code>Each</code></a>, exposing the 9 core methods:</p>
 <ul>
-<li><strong>Callable</strong> like a function</li>
-<li><strong>Fluent</strong> via chainable methods</li>
+<li><a href="AsyncEach.html#if"><code>if()</code></a></li>
+<li><a href="AsyncEach.html#sthen"><code>sthen()</code></a></li>
+<li><a href="AsyncEach.html#else"><code>else()</code></a></li>
+<li><a href="AsyncEach.html#which"><code>which()</code></a></li>
+<li><a href="AsyncEach.html#when"><code>when()</code></a></li>
+<li><a href="AsyncEach.html#match"><code>match()</code></a></li>
+<li><a href="AsyncEach.html#each"><code>each()</code></a></li>
+<li><a href="AsyncEach.html#self"><code>self()</code></a></li>
+<li><a href="AsyncEach.html#what"><code>what()</code></a></li>
 </ul>
-<p>Shared semantic API (9 core methods):
-<code>if()</code>, <code>sthen()</code>, <code>else()</code>, <code>which()</code>, <code>when()</code>, <code>match()</code>, <code>each()</code>, <code>self()</code>, and <code>what()</code>.</p></div>
+<p>This enables declarative and composable pipelines over asynchronous sequences with <strong>lazy evaluation</strong>.</p></div>
         
     
 </header>
@@ -53,7 +60,7 @@ Each instance is:</p>
     
 
     
-    <h4 class="name" id="What"><span class="type-signature"></span>new What<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="AsyncEach"><span class="type-signature"></span>new AsyncEach<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -103,6 +110,15 @@ Each instance is:</p>
     
 
     
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="What.html"><code>What</code></a></li>
+        
+            <li><a href="Each.html"><code>Each</code></a></li>
+        </ul>
+    </dd>
+    
 
     
 </dl>
@@ -127,7 +143,7 @@ Each instance is:</p>
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>const doublePlusOne = What.as(x => x * 2)  .if(x => x > 0)  .sthen(x => x + 1);doublePlusOne(5);       // => 11doublePlusOne.what(5);  // => 11</code></pre>
+    <pre class="prettyprint"><code>const seq = AsyncEach.of(  Promise.resolve(1),  Promise.resolve(2),  Promise.resolve(3)).sthen(x => x * 2);for await (const value of seq.when()) {  console.log(value); // 2, 4, 6}An iterable of Promises can be transformed and composed like any other iterableusing the methods of the <a href="Each.html"><code>Each</code></a> class.  Finally, <a href="Each.html#.when"><code>Each.when</code></a> can transform an iterable of Promises into an `AsyncEach` of resolved values,allowing you to compose, restrict, and transform asynchronously even before the values are available.</code></pre>
 
 
 
@@ -157,7 +173,7 @@ Each instance is:</p>
     
 
     
-    <h4 class="name" id="each"><span class="type-signature"></span>each<span class="signature">(f)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
+    <h4 class="name" id="each"><span class="type-signature"></span>each<span class="signature">(that<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
     
 
     
@@ -165,642 +181,7 @@ Each instance is:</p>
 
 
 <div class="description">
-    <p>Cartesian product of results from this What.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>f</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-|
-
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Function or What to apply to each element</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="else"><span class="type-signature"></span>else<span class="signature">(f)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Provide fallback(s) if undefined.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>f</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="What.html">What</a></span>
-|
-
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Alternatives</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="if"><span class="type-signature"></span>if<span class="signature">(p<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Filter input using predicate.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>p</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    item => item!==undefined
-                
-                </td>
-            
-
-            <td class="description last"><p>Predicate</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="let"><span class="type-signature">(abstract) </span>let<span class="signature">(arg, value)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Bind a value to a key or keys.
-Must be implemented by subclass or instance.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>arg</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-|
-
-<span class="param-type">Array.&lt;*></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Key or keys</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>value</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Value to assign</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="match"><span class="type-signature"></span>match<span class="signature">(&hellip;ff)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Zip multiple What instances.</p>
+    <p>Cartesian product with another iterable.</p>
 </div>
 
 
@@ -838,217 +219,19 @@ Must be implemented by subclass or instance.</p>
 
         <tr>
             
-                <td class="name"><code>ff</code></td>
+                <td class="name"><code>that</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="What.html">What</a></span>
+<span class="param-type">Iterable</span>
 |
 
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="self"><span class="type-signature"></span>self<span class="signature">(indexOrNames<span class="signature-attributes">opt</span>, valueOrName<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Repeat self or apply mapping to object/array.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>indexOrNames</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
+<span class="param-type">AsyncIterable</span>
 |
 
-<span class="param-type">string</span>
-|
-
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>valueOrName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
+<span class="param-type">Array.&lt;Promise></span>
 
 
             
@@ -1140,7 +323,7 @@ Must be implemented by subclass or instance.</p>
     </dt>
     <dd>
         
-<span class="param-type"><a href="What.html">What</a></span>
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
 
 
     </dd>
@@ -1158,7 +341,7 @@ Must be implemented by subclass or instance.</p>
     
 
     
-    <h4 class="name" id="sthen"><span class="type-signature"></span>sthen<span class="signature">(&hellip;f)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
+    <h4 class="name" id="else"><span class="type-signature"></span>else<span class="signature">(that<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
     
 
     
@@ -1166,7 +349,8 @@ Must be implemented by subclass or instance.</p>
 
 
 <div class="description">
-    <p>Map values through a function.</p>
+    <p>Concatenates this <code>AsyncEach</code> with another iterable,
+or flattens it if omitted.</p>
 </div>
 
 
@@ -1204,13 +388,19 @@ Must be implemented by subclass or instance.</p>
 
         <tr>
             
-                <td class="name"><code>f</code></td>
+                <td class="name"><code>that</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type">Iterable</span>
+|
+
+<span class="param-type">AsyncIterable</span>
+|
+
+<span class="param-type">Promise</span>
 
 
             
@@ -1219,18 +409,18 @@ Must be implemented by subclass or instance.</p>
             
                 <td class="attributes">
                 
-
+                    &lt;optional><br>
                 
 
                 
-                    &lt;repeatable><br>
+
                 
                 </td>
             
 
             
 
-            <td class="description last"><p>Functions to apply</p></td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -1302,7 +492,7 @@ Must be implemented by subclass or instance.</p>
     </dt>
     <dd>
         
-<span class="param-type"><a href="What.html">What</a></span>
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
 
 
     </dd>
@@ -1320,7 +510,7 @@ Must be implemented by subclass or instance.</p>
     
 
     
-    <h4 class="name" id="what"><span class="type-signature">(abstract) </span>what<span class="signature">(&hellip;args)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    <h4 class="name" id="equals"><span class="type-signature">(async) </span>equals<span class="signature">(that)</span><span class="type-signature"> &rarr; {Promise.&lt;boolean>}</span></h4>
     
 
     
@@ -1328,8 +518,7 @@ Must be implemented by subclass or instance.</p>
 
 
 <div class="description">
-    <p>Evaluate the function with given arguments.
-Must be implemented by subclass or instance.</p>
+    <p>Compares this <code>AsyncEach</code> with another iterable or AsyncEach for deep equality.</p>
 </div>
 
 
@@ -1353,8 +542,6 @@ Must be implemented by subclass or instance.</p>
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -1367,33 +554,26 @@ Must be implemented by subclass or instance.</p>
 
         <tr>
             
-                <td class="name"><code>args</code></td>
+                <td class="name"><code>that</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">*</span>
+<span class="param-type">Iterable</span>
+|
+
+<span class="param-type">AsyncIterable</span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
 
             
 
-            <td class="description last"><p>Input arguments</p></td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -1458,7 +638,7 @@ Must be implemented by subclass or instance.</p>
 
         
 <div class="param-desc">
-    <p>Result of evaluation</p>
+    <p>Resolves to true if equal</p>
 </div>
 
 
@@ -1469,7 +649,7 @@ Must be implemented by subclass or instance.</p>
     </dt>
     <dd>
         
-<span class="param-type">*</span>
+<span class="param-type">Promise.&lt;boolean></span>
 
 
     </dd>
@@ -1487,7 +667,7 @@ Must be implemented by subclass or instance.</p>
     
 
     
-    <h4 class="name" id="when"><span class="type-signature"></span>when<span class="signature">(p<span class="signature-attributes">opt</span>, start<span class="signature-attributes">opt</span>, inclusive<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
+    <h4 class="name" id="if"><span class="type-signature"></span>if<span class="signature">(predicate)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
     
 
     
@@ -1495,7 +675,7 @@ Must be implemented by subclass or instance.</p>
 
 
 <div class="description">
-    <p>Slice values by predicate or index.</p>
+    <p>Filters items using a predicate (sync or async).</p>
 </div>
 
 
@@ -1519,11 +699,7 @@ Must be implemented by subclass or instance.</p>
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -1535,256 +711,7 @@ Must be implemented by subclass or instance.</p>
 
         <tr>
             
-                <td class="name"><code>p</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-|
-
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>Predicate or index</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>start</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    true
-                
-                </td>
-            
-
-            <td class="description last"><p>Start or end</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>inclusive</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    start
-                
-                </td>
-            
-
-            <td class="description last"><p>Include boundary</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="which"><span class="type-signature"></span>which<span class="signature">(p<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Filter by predicate.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>p</code></td>
+                <td class="name"><code>predicate</code></td>
             
 
             <td class="type">
@@ -1797,1645 +724,10 @@ Must be implemented by subclass or instance.</p>
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    item => item!==undefined
-                
-                </td>
-            
-
-            <td class="description last"><p>Predicate</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".as"><span class="type-signature">(static) </span>as<span class="signature">(f)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Wrap a value, function, or What instance as a <code>What</code>.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>f</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Value, function, or What instance</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".each"><span class="type-signature">(static) </span>each<span class="signature">(&hellip;ff)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Static version of <code>each</code>.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>ff</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="What.html">What</a></span>
-|
-
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".else"><span class="type-signature">(static) </span>else<span class="signature">(&hellip;ff)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Static version of <code>else</code>.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>ff</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="What.html">What</a></span>
-|
-
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Alternatives</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".if"><span class="type-signature">(static) </span>if<span class="signature">(f, p<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Static version of <code>if</code>.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>f</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="What.html">What</a></span>
-|
-
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>Function or What instance</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>p</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    item => item!==undefined
-                
-                </td>
-            
-
-            <td class="description last"><p>Predicate</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".match"><span class="type-signature">(static) </span>match<span class="signature">(&hellip;ff)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Static version of <code>match</code>.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>ff</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="What.html">What</a></span>
-|
-
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".of"><span class="type-signature">(static) </span>of<span class="signature">(args, value)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Create a <code>What</code> that matches exact argument arrays.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-|
-
-<span class="param-type">Array.&lt;*></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Expected argument(s)</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>value</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Value to return if arguments match</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".self"><span class="type-signature">(static) </span>self<span class="signature">(f, indexOrNames<span class="signature-attributes">opt</span>, valueOrName<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Static version of <code>self</code>.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>f</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="What.html">What</a></span>
-|
-
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>indexOrNames</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-|
-
-<span class="param-type">string</span>
-|
-
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>valueOrName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".sthen"><span class="type-signature">(static) </span>sthen<span class="signature">(&hellip;ff)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Static version of <code>sthen</code>.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>ff</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Functions to apply sequentially</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".what"><span class="type-signature">(static) </span>what<span class="signature">(f, &hellip;args)</span><span class="type-signature"> &rarr; {*}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Evaluate a What, function, or constant value.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>f</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>What instance, function, or value</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
             
 
-            <td class="description last"><p>Arguments to evaluate</p></td>
+            <td class="description last"><p>A function returning boolean or Promise<boolean></p></td>
         </tr>
 
     
@@ -3500,7 +792,7 @@ Must be implemented by subclass or instance.</p>
 
         
 <div class="param-desc">
-    <p>Result</p>
+    <p>Filtered AsyncEach</p>
 </div>
 
 
@@ -3511,7 +803,7 @@ Must be implemented by subclass or instance.</p>
     </dt>
     <dd>
         
-<span class="param-type">*</span>
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
 
 
     </dd>
@@ -3529,7 +821,7 @@ Must be implemented by subclass or instance.</p>
     
 
     
-    <h4 class="name" id=".when"><span class="type-signature">(static) </span>when<span class="signature">(f, predicateOrIndex<span class="signature-attributes">opt</span>, start<span class="signature-attributes">opt</span>, inclusive<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
+    <h4 class="name" id="match"><span class="type-signature"></span>match<span class="signature">(that<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
     
 
     
@@ -3537,7 +829,713 @@ Must be implemented by subclass or instance.</p>
 
 
 <div class="description">
-    <p>Static version of <code>when</code>.</p>
+    <p>Zips this sequence with another.
+Mirrors <a href="Each.html#.match"><code>Each.match</code></a>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>that</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Iterable</span>
+|
+
+<span class="param-type">AsyncIterable</span>
+|
+
+<span class="param-type">Array.&lt;Promise></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="self"><span class="type-signature"></span>self<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns a self-repeating iterable.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="sthen"><span class="type-signature"></span>sthen<span class="signature">(fn)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Maps a function over each item (sync or async).</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Mapping function</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Mapped AsyncEach</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="toArray"><span class="type-signature">(async) </span>toArray<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;Array.&lt;*>>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Collects this <code>AsyncEach</code> into an array of resolved values.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Resolves to an array</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Array.&lt;*>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="what"><span class="type-signature"></span>what<span class="signature">(op, got)</span><span class="type-signature"> &rarr; {Promise.&lt;*>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Delegates to <a href="AsyncEach.html#.what"><code>AsyncEach.what</code></a>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>op</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>got</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;*></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="when"><span class="type-signature"></span>when<span class="signature">(p<span class="signature-attributes">opt</span>, start<span class="signature-attributes">opt</span>, inclusive<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Delegates to <a href="AsyncEach.html#.when"><code>AsyncEach.when</code></a>.</p>
+<ul>
+<li>If called without args, bridges sync iterables of Promises to async iterables of values.</li>
+<li>If given a predicate or index, slices the sequence.</li>
+</ul>
 </div>
 
 
@@ -3577,45 +1575,7 @@ Must be implemented by subclass or instance.</p>
 
         <tr>
             
-                <td class="name"><code>f</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="What.html">What</a></span>
-|
-
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>predicateOrIndex</code></td>
+                <td class="name"><code>p</code></td>
             
 
             <td class="type">
@@ -3648,7 +1608,7 @@ Must be implemented by subclass or instance.</p>
                 </td>
             
 
-            <td class="description last"><p>Predicate or index</p></td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -3798,7 +1758,7 @@ Must be implemented by subclass or instance.</p>
     </dt>
     <dd>
         
-<span class="param-type"><a href="What.html">What</a></span>
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
 
 
     </dd>
@@ -3816,7 +1776,7 @@ Must be implemented by subclass or instance.</p>
     
 
     
-    <h4 class="name" id=".which"><span class="type-signature">(static) </span>which<span class="signature">(f, p<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
+    <h4 class="name" id="which"><span class="type-signature"></span>which<span class="signature">(predicate)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
     
 
     
@@ -3824,7 +1784,492 @@ Must be implemented by subclass or instance.</p>
 
 
 <div class="description">
-    <p>Static version of <code>which</code>.</p>
+    <p>Alias for <a href="AsyncEach.html#if"><code>AsyncEach#if</code></a>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>predicate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".along"><span class="type-signature">(static) </span>along<span class="signature">(start, next)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Creates a potentially infinite AsyncEach starting from an initial value,
+generating next values using a function.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>start</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Initial value</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>next</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Function (sync or async) to generate next value</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Infinite AsyncEach</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".as"><span class="type-signature">(static) </span>as<span class="signature">(items)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Coerces an input into an <code>AsyncEach</code>.</p>
+<ul>
+<li>If already an <code>AsyncEach</code>, returns it.</li>
+<li>If async iterable, wraps it.</li>
+<li>If sync iterable, wraps it.</li>
+<li>Otherwise, wraps scalar as one-item sequence.</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>items</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Input sequence or value</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".each"><span class="type-signature">(static) </span>each<span class="signature">(&hellip;aaa)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Cartesian product of multiple iterables.
+Mirrors <a href="Each.html#.each"><code>Each.each</code></a>.</p>
 </div>
 
 
@@ -3852,8 +2297,6 @@ Must be implemented by subclass or instance.</p>
         
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
@@ -3864,16 +2307,19 @@ Must be implemented by subclass or instance.</p>
 
         <tr>
             
-                <td class="name"><code>f</code></td>
+                <td class="name"><code>aaa</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="What.html">What</a></span>
+<span class="param-type">Iterable</span>
 |
 
-<span class="param-type">function</span>
+<span class="param-type">AsyncIterable</span>
+|
+
+<span class="param-type">Array.&lt;Promise></span>
 
 
             
@@ -3886,55 +2332,14 @@ Must be implemented by subclass or instance.</p>
                 
 
                 
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>Function or What</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>p</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
+                    &lt;repeatable><br>
                 
                 </td>
             
 
             
-                <td class="default">
-                
-                    item => item!==undefined
-                
-                </td>
-            
 
-            <td class="description last"><p>Predicate</p></td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -4007,6 +2412,1368 @@ Must be implemented by subclass or instance.</p>
     <dd>
         
 <span class="param-type"><a href="What.html">What</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".else"><span class="type-signature">(static) </span>else<span class="signature">(aaa)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Flattens an iterable of iterables into an <code>AsyncEach</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>aaa</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Iterable</span>
+|
+
+<span class="param-type">AsyncIterable</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Iterable of iterables</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Flattened AsyncEach</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".equal"><span class="type-signature">(async, static) </span>equal<span class="signature">(aa, bb)</span><span class="type-signature"> &rarr; {Promise.&lt;boolean>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Checks deep equality between two async iterables or iterables.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>aa</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Iterable</span>
+|
+
+<span class="param-type">AsyncIterable</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>bb</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Iterable</span>
+|
+
+<span class="param-type">AsyncIterable</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Resolves to true if equal</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;boolean></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".match"><span class="type-signature">(static) </span>match<span class="signature">(&hellip;aaa)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>.&lt;Array.&lt;any>>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Zips multiple iterables together.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>aaa</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Iterable</span>
+|
+
+<span class="param-type">AsyncIterable</span>
+|
+
+<span class="param-type">Array.&lt;Promise></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a>.&lt;Array.&lt;any>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".of"><span class="type-signature">(static) </span>of<span class="signature">(&hellip;items)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Creates an <code>AsyncEach</code> from given items (values or Promises).</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>items</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">any</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Items or promises</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A new AsyncEach instance</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".self"><span class="type-signature">(static) </span>self<span class="signature">(aa)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Yields the same iterable indefinitely.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>aa</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Iterable</span>
+|
+
+<span class="param-type">AsyncIterable</span>
+|
+
+<span class="param-type">Array.&lt;Promise></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".what"><span class="type-signature">(async, static) </span>what<span class="signature">(aa, op<span class="signature-attributes">opt</span>, got<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;*>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Reduces an async iterable.</p>
+<ul>
+<li>With <code>op</code>: reduces like <code>Array.reduce</code> (async/sync).</li>
+<li>Without <code>op</code>: yields the first resolved item.</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>aa</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">AsyncIterable</span>
+|
+
+<span class="param-type">Iterable.&lt;Promise></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>op</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>got</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;*></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".when"><span class="type-signature">(static) </span>when<span class="signature">(aa, p<span class="signature-attributes">opt</span>, start<span class="signature-attributes">opt</span>, inclusive<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Slices an async iterable or resolves Promises.</p>
+<ul>
+<li>No arguments: bridges async iterables of Promises to async iterables of resolved values.</li>
+<li>Predicate function: slices items starting/ending where the predicate matches.</li>
+<li>Number: slices by index.</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>aa</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Iterable</span>
+|
+
+<span class="param-type">AsyncIterable</span>
+|
+
+<span class="param-type">Array.&lt;Promise></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Input iterable (can contain Promises)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>p</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+|
+
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Predicate or index for slicing</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>start</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last"><p>Whether to start or end at the matching element</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>inclusive</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    start
+                
+                </td>
+            
+
+            <td class="description last"><p>Include the matched element</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Returns an AsyncEach of resolved or sliced values</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
 
 
     </dd>

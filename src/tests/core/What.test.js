@@ -2,6 +2,7 @@ import { describe, it } from 'mocha';
 import assert from 'assert';
 import { What } from '../../main/core/What.js';
 import {Path } from '../../main/util/Path.js';
+import { Each } from '../../main/core/Each.js';
 
 describe('What', () => {
 
@@ -12,11 +13,6 @@ describe('What', () => {
 
         const w = What.as(x => x);
         assert.equal(What.as(w), w); // should return same instance
-    });
-
-    it('toFunc - converts to native function', () => {
-        const fn = What.as(x => x * 2).toFunc();
-        assert.equal(fn(4), 8);
     });
  
     it('of - value-based match', () => {
@@ -43,8 +39,8 @@ describe('What', () => {
         assert.deepEqual([...sliced.what()], [3, 4, 5]);
     });
 
-    it('then - sequential application', () => {
-        const composed = What.then(x => x + 1, x => x * 2);
+    it('sthen - sequential application', () => {
+        const composed = What.sthen(x => x + 1, x => x * 2);
         assert.equal(composed.what(2), 6); // (2 + 1) * 2
     });
 
@@ -131,5 +127,55 @@ describe('What', () => {
         assert.equal(What.what(f, 2, 3), 5);
         assert.equal(What.what(7), 7);
     });
-
+    
+    describe("What callable", () => {
+      it("should behave like a function when created from a function", () => {
+        const double = What.as(x => x * 2);
+        assert.equal(double(5), 10);   // direct call
+        assert.equal(double.what(5), 10); // explicit .what()
+      });
+    
+      it("should behave like a function when created from a constant", () => {
+        const five = What.as(5);
+        assert.equal(five(5), true);
+        assert.equal(five(3), false);
+      });
+    
+      it("instance methods should return callable What", () => {
+        const double = What.as(x => x * 2);
+        const plusOne = double.sthen(x => x + 1);
+    
+        assert.equal(plusOne(3), 7); // (3 * 2) + 1
+      });
+    
+      it("static methods should return callable What", () => {
+        const double = What.as(x => x * 2);
+        const square = What.as(x => x * x);
+        const both = What.match(double, square);
+    
+        const result = both(3);
+        assert.deepEqual(result, [6, 9]); // double(3)=6, square(3)=9
+      });
+    
+      it("each(f) should return a callable What", () => {
+        const numbers = What.as(() => [1, 2, 3]);
+        const squareEach = numbers.each(x => [x, x * x]);
+    
+        const e = squareEach();
+        assert.ok(e instanceof Each);
+    
+        const result = [...e];
+        assert.deepEqual(result, [1, 1, 2, 4, 3, 9]); // cartesian product style
+      });
+    
+      it("nested callable chain should work", () => {
+        const w = What.as(x => x + 1)
+          .sthen(x => x * 2)
+          .if(x => x < 10);
+    
+        assert.equal(w(3), 8);   // (3+1)*2 = 8
+        assert.equal(w(20), undefined); // filtered out
+      });
+    });
+    
 });

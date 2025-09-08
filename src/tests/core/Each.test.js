@@ -1,7 +1,7 @@
 import {describe, it} from 'mocha';
 import assert from 'assert';
 import { Each } from '../../main/core/Each.js';
-
+import { AsyncEach } from '../../main/core/AsyncEach.js';
 describe('Each', () => {
     
     it('as', () => {
@@ -26,9 +26,9 @@ describe('Each', () => {
         assert(each.equals([0]))
     });
     
-    it('then', () => {
+    it('sthen', () => {
         const each = Each.of(0, 1, 2)
-            .then(i => i%2);
+            .sthen(i => i%2);
         assert(each.equals([0, 1, 0]))
     }); 
     
@@ -60,6 +60,58 @@ describe('Each', () => {
             .when(1);
         assert(each.equals([1]))
     }); 
+
+    describe('Each.when() — Async Resolution', function () {
+
+    it('should return an AsyncEach when called without arguments on promises', async function () {
+        const asyncEach = Each.of(
+        Promise.resolve(1),
+        Promise.resolve(2),
+        Promise.resolve(3)
+        ).sthen(async n => (await n) * 2).when();
+
+        // Ensure it is an AsyncEach instance
+        assert(asyncEach instanceof AsyncEach, 'Result should be an AsyncEach');
+
+        const results = [];
+        for await (const value of asyncEach) {
+            results.push(value);
+        }
+
+        assert.deepStrictEqual(results, [2, 4, 6], 'Values should be doubled after resolving promises');
+    });
+
+    it('should pass through non-promise values without modification', async function () {
+        const asyncEach = Each.of(1, 2, 3).when(); // integers, not promises
+
+        assert(asyncEach instanceof AsyncEach, 'Result should still be an AsyncEach');
+
+        const results = [];
+        for await (const value of asyncEach) {
+        results.push(value);
+        }
+
+        assert.deepStrictEqual(results, [1, 2, 3], 'Values should be unchanged for non-promises');
+    });
+
+    it('should work with mixed promises and plain values', async function () {
+        const asyncEach = Each.of(
+        1,
+        Promise.resolve(2),
+        3,
+        Promise.resolve(4)
+        ).when();
+
+        const results = [];
+        for await (const value of asyncEach) {
+        results.push(value);
+        }
+
+        assert.deepStrictEqual(results, [1, 2, 3, 4], 'Mixed promises and plain values should resolve correctly');
+    });
+
+    });
+
     
     it('self', () => {
         const each = Each.of(0, 1)

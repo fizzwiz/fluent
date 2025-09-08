@@ -59,38 +59,6 @@ export class Path extends Scope {
 		
 		return got
 	}
-
-	/**
-	 * Builds the path of values specified by the given keys.
-	 * The traversal stops at the first undefined key.
-	 * 
-	 * If a creator function is passed, undefined properties along the path are created.
-	 * 
-	 * @param {Object} obj - The root object
-	 * @param {Array} keys - An array of keys representing the path
-	 * @param {function} [creator=undefined] - A function with two arguments (obj, key) that creates the property if it's undefined
-	 * @returns {Path} - The path of values
-	 */
-	static ofProperties(obj, keys, creator = undefined) {
-		
-		let path = new Path(), ctx = obj;
-
-		for (let key of keys) {
-			if (ctx[key] === undefined && creator) {
-				// Call the creator function to instantiate the missing property
-				ctx[key] = What.what(creator, ctx, key)
-			}
-			
-			if (ctx[key] === undefined) { // The key is undefined and the missing property cannot be created
-				break; // stop the path
-			} else { // The key is defined, add it to the path and update the context
-				path = path.add(ctx[key]);
-				ctx = ctx[key];            
-			}
-		}
-
-		return path; // Return the Path of values
-	}
 		
 	/**
 	 * The previous {@link Path}
