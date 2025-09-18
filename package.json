@@ -37,8 +37,7 @@
     },
     "main": "./src/main/index.js",
     "exports": {
-        ".": "./src/main/index.js",
-        "./*": "./src/main/*"
+        ".": "./src/main/index.js"
     },
     "scripts": {
         "test": "mocha --recursive ./src/tests",

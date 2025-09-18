@@ -58,7 +58,7 @@ const results = Each.of(
 )
 .sthen(async n => n * 2);
 
-for await (const value of results.when()) {
+for await (const value of results.when()) {  // await when() the promised results are available
   console.log(value); // 2, 4, 6
 }
 ```

@@ -165,7 +165,9 @@ Each instance is:</p>
 
 
 <div class="description">
-    <p>Cartesian product of results from this What.</p>
+    <p>Dynamic version: incrementally extends results for a given call.</p>
+<p>Applies a function or What instance <code>f</code> to each result produced by this What,
+filters undefined results, and flattens the final iterable into an Each.</p>
 </div>
 
 
@@ -220,7 +222,7 @@ Each instance is:</p>
 
             
 
-            <td class="description last"><p>Function or What to apply to each element</p></td>
+            <td class="description last"><p>Function or What to apply to each result of this What.</p></td>
         </tr>
 
     
@@ -284,6 +286,10 @@ Each instance is:</p>
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <p>A new What that flattens and iterates all results produced by <code>f</code>.</p>
+</div>
+
 
 
 <dl>
@@ -310,7 +316,7 @@ Each instance is:</p>
     
 
     
-    <h4 class="name" id="else"><span class="type-signature"></span>else<span class="signature">(f)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
+    <h4 class="name" id="else"><span class="type-signature"></span>else<span class="signature">(f, errStringOrRegex<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
     
 
     
@@ -318,7 +324,14 @@ Each instance is:</p>
 
 
 <div class="description">
-    <p>Provide fallback(s) if undefined.</p>
+    <p>Provide a fallback if this What/function returns <code>undefined</code> or throws a matching error.</p>
+<p>This dynamic version of <code>else</code> allows:</p>
+<ul>
+<li>Passing a fallback function or What instance <code>f</code> that will be evaluated if the primary
+function returns <code>undefined</code>.</li>
+<li>Optionally filtering caught errors by a string or regular expression. Only errors whose
+message matches <code>errStringOrRegex</code> (or whose stringified form matches) will be swallowed; other errors are re-thrown.</li>
+</ul>
 </div>
 
 
@@ -342,6 +355,8 @@ Each instance is:</p>
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -360,20 +375,65 @@ Each instance is:</p>
             <td class="type">
             
                 
-<span class="param-type"><a href="What.html">What</a></span>
+<span class="param-type">function</span>
 |
 
-<span class="param-type">function</span>
+<span class="param-type"><a href="What.html">What</a></span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>Alternatives</p></td>
+            <td class="description last"><p>Fallback function or What instance to use if the primary returns <code>undefined</code>.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>errStringOrRegex</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">RegExp</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Optional error message string or RegExp to catch and use fallback.
+If omitted, any error is re-thrown.</p></td>
         </tr>
 
     
@@ -437,6 +497,10 @@ Each instance is:</p>
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <p>A new What instance that applies the fallback logic.</p>
+</div>
+
 
 
 <dl>
@@ -454,6 +518,11 @@ Each instance is:</p>
     
 
 
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const fn = What.as(x => {  if (x &lt; 0) throw new Error("negative");  return undefined;}).else(x => x * 2, /negative/);fn(-1); // => -2  (error "negative" matched, fallback applied)fn(3);  // => 6   (primary returned undefined, fallback applied)</code></pre>
 
 
 
@@ -2064,7 +2133,7 @@ Must be implemented by subclass or instance.</p>
 
 
 <div class="description">
-    <p>Static version of <code>each</code>.</p>
+    <p>Static version: generates a search space of Paths across multiple Functions.</p>
 </div>
 
 
@@ -2131,7 +2200,7 @@ Must be implemented by subclass or instance.</p>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Functions or What instances</p></td>
         </tr>
 
     
@@ -2195,6 +2264,10 @@ Must be implemented by subclass or instance.</p>
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <p>A What returning all incremental path dispositions</p>
+</div>
+
 
 
 <dl>
@@ -2297,214 +2370,6 @@ Must be implemented by subclass or instance.</p>
             
 
             <td class="description last"><p>Alternatives</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="What.html">What</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".if"><span class="type-signature">(static) </span>if<span class="signature">(f, p<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Static version of <code>if</code>.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>f</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="What.html">What</a></span>
-|
-
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>Function or What instance</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>p</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    item => item!==undefined
-                
-                </td>
-            
-
-            <td class="description last"><p>Predicate</p></td>
         </tr>
 
     
@@ -4040,7 +3905,7 @@ Must be implemented by subclass or instance.</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Mon Sep 08 2025 09:01:43 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Sep 18 2025 18:04:34 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

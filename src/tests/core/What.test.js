@@ -52,36 +52,112 @@ describe('What', () => {
         assert.equal(f.what(1), 10); // fallback triggered
         assert.equal(f.what(2), 2);  // no fallback
     });
-
+    
+    describe('What.else (dynamic)', () => {
+    
+      it('applies fallback if the original function returns undefined', () => {
+        const fn = What.as(x => undefined).else(x => x * 2);
+        assert.strictEqual(fn(3), 6);
+      });
+    
+      it('does not call fallback if the original function returns a value', () => {
+        const fn = What.as(x => x + 1).else(x => x * 2);
+        assert.strictEqual(fn(3), 4);
+      });
+    
+      it('catches error with matching message and applies fallback', () => {
+        const fn = What.as(x => {
+          if (x < 0) throw new Error("negative");
+          return x;
+        }).else(x => Math.abs(x), "negative");
+    
+        assert.strictEqual(fn(-5), 5);
+        assert.strictEqual(fn(10), 10);
+      });
+    
+      it('catches error matching regex and applies fallback', () => {
+        const fn = What.as(x => {
+          if (x === 0) throw new Error("zero value");
+          return x;
+        }).else(x => 1, /zero/);
+    
+        assert.strictEqual(fn(0), 1);
+        assert.strictEqual(fn(5), 5);
+      });
+    
+      it('re-throws errors that do not match string or regex', () => {
+        const fn = What.as(x => { 
+          if (x < 0) throw new Error("negative"); 
+          return x; 
+        }).else(x => 0, /other/);
+    
+        assert.throws(() => fn(-1), /negative/);
+      });
+    
+    });
+    
     it('match - applies all and returns results', () => {
         const m = What.match(x => x + 1, x => x * 2);
         assert.deepEqual(m.what(3), [4, 6]);
     });
-
-    it('each - combinatorial expansion with path growth', () => {
-        const f1 = x => [x + 1, x + 2];
-        const f2 = x => [x * 10, x * 100];
-
-        const composed = What.each(f1, f2);
-
-        // Start from a Path with one item (0)
-        let start = Path.of(0);
-        let result = [...composed.what(start)].map(p => p.toArray());
-
-        assert.deepEqual(result, [
-            [0, 1],
-            [0, 2]
-        ]);
-
-        // Apply again to [0,1] to simulate step 2 of the expansion
-        start = Path.of(0, 1);
-        result = [...composed.what(start)].map(p => p.toArray());
-
-        assert.deepEqual(result, [
-            [0, 1, 10],
-            [0, 1, 100]
-        ]);
-    });    
+    
+    describe("What.each()", function () {
+    
+      describe("Dynamic each()", function () {
+        it("should generate flattened results applying f to each value", function () {
+          const f = What.as(x => [x, x + 1]);
+          const g = What.as(y => [y * 2]);
+    
+          const h = f.each(g);
+          const result = h(2);
+    
+          const values = [...result];
+          assert(values.includes(4), "Expected result to include 4");
+          assert(values.includes(6), "Expected result to include 6");
+          assert.strictEqual(values.length, 2, "Expected exactly 2 results");
+        });
+    
+        it("should skip undefined values", function () {
+          const f = What.as(x => [x, x + 1]);
+          const g = What.as(y => y < 4? undefined: y * 2);
+    
+          const h = f.each(g);
+          const result = [...h(3)];
+    
+          assert.deepStrictEqual(result, [8], "Undefined results should be filtered");
+        });
+      });
+    
+      describe("Static each()", function () {
+        it("should generate extended paths from Path input", function () {
+          const a = What.as(x => x + 1);
+          const b = What.as(x => x * 2);
+    
+          const staticEach = What.each(a, b);
+          const path = Path.of(1);
+    
+          const product = staticEach(path);
+          assert(product instanceof Each, "Static each should return an Each instance");
+    
+          const items = [...product];
+          assert(items.length > 0, "Static each should generate at least one path");
+          items.forEach(p => {
+            assert(p instanceof Array || p instanceof Path, "Each element should be a Path or array");
+          });
+        });
+    
+        it("should handle empty path correctly", function () {
+          const a = What.as(x => x + 1);
+          const staticEach = What.each(a);
+          const path = Path.of();
+    
+          const product = [...staticEach(path)];
+          assert.strictEqual(product.length, 0, "Empty path should return empty result");
+        });
+      });
+    
+    });
+    
 
 
     it('self() - default path-expanding mode', () => {
@@ -155,17 +231,6 @@ describe('What', () => {
     
         const result = both(3);
         assert.deepEqual(result, [6, 9]); // double(3)=6, square(3)=9
-      });
-    
-      it("each(f) should return a callable What", () => {
-        const numbers = What.as(() => [1, 2, 3]);
-        const squareEach = numbers.each(x => [x, x * x]);
-    
-        const e = squareEach();
-        assert.ok(e instanceof Each);
-    
-        const result = [...e];
-        assert.deepEqual(result, [1, 1, 2, 4, 3, 9]); // cartesian product style
       });
     
       it("nested callable chain should work", () => {

@@ -442,7 +442,7 @@ export class AsyncEach {
    * @param {*} got
    * @returns {Promise<*>}
    */
-  what(op, got) {
+  async what(op, got) {
     return AsyncEach.what(this, op, got);
   }
 
