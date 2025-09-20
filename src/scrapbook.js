@@ -1,10 +1,18 @@
 import { What } from "./main/core/What.js";
 import { Path } from "./main/util/Path.js";
+import assert from "assert";
 
-const f = What.as(x => [x, x + 1]);
-const g = y => [y, y * 2];
-const h = f.each(g);
+const f = What.as(x => x);
+const g = f.when(async x => x > 0);
 
-// Applies g on each result returned by f
-const results = h(2);  // -> [2, 4, 3, 6]   
-console.log(results.toArray());
+assert.strictEqual(typeof f(0), 'number');
+assert.ok(g(0) instanceof Promise);
+
+(async () => {      
+  let result = await g(0);
+  assert.strictEqual(result, undefined);
+
+  result = await g(1);
+  assert.strictEqual(result, f(1));
+})();
+

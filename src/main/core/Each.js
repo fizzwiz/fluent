@@ -115,7 +115,7 @@ export class Each {
       let current = start;
       while (current) {
         yield current;
-        current = What.what(next, current);
+        current = next(current);
       }
     };
     return got;
@@ -201,6 +201,7 @@ export class Each {
    * @param {Iterable} aa Input iterable.
    * @param {Function} [p=item => item !== undefined]
    * @returns {Each}
+   * @private
    */
   static if(aa, p = item => item !== undefined) {
     return Each.which(aa, p);
@@ -227,12 +228,13 @@ export class Each {
    * @example
    * const doubled = Each.sthen([1, 2, 3], x => x * 2);
    * [...doubled]; // [2, 4, 6]
+   * @private
    */
   static sthen(aa, f) {
     const got = new Each();
     got[Symbol.iterator] = function* () {
       let i = 0;
-      for (let a of aa) yield What.what(f, a, i++);
+      for (let a of aa) yield f(a, i++);
     };
     return got;
   }
@@ -287,13 +289,14 @@ export class Each {
    * @param {Iterable} aa Input iterable.
    * @param {Function} [p=item => item !== undefined]
    * @returns {Each}
+   * @private
    */
   static which(aa, p = item => item !== undefined) {
     const got = new Each();
     got[Symbol.iterator] = function* () {
       let i = 0;
       for (let a of aa) {
-        if (What.what(p, a, i++)) yield a;
+        if (p(a, i++)) yield a;
       }
     };
     return got;
@@ -341,6 +344,7 @@ export class Each {
    * for await (const v of g) {
    *   console.log(v); // 1, then 2
    * }
+   * @private
    */
 
   static when(aa, p, start = true, inclusive = start) {
@@ -360,7 +364,7 @@ export class Each {
       let i = 0, started = false;
       for (let a of aa) {
         if (started) yield a;
-        else if (What.what(p, a, i)) {
+        else if (p(a, i)) {
           started = true;
           if (inclusive) yield a;
         }
@@ -371,7 +375,7 @@ export class Each {
       let i = 0, ended = false;
       for (let a of aa) {
         if (ended) break;
-        if (What.what(p, a, i)) {
+        if (p(a, i)) {
           ended = true;
           if (inclusive) yield a;
         } else {
@@ -462,6 +466,7 @@ export class Each {
    * @static
    * @param {Iterable} aa
    * @returns {Each}
+   * @private
    */
   static self(aa) {
     const got = new Each();
@@ -490,6 +495,7 @@ export class Each {
    * @param {Function} [op]
    * @param {*} [got]
    * @returns {*}
+   * @private
    */
   static what(aa, op, got) {
     if (op) {
@@ -497,7 +503,7 @@ export class Each {
         got = Each.what(aa);
         aa = Each.when(aa, 1);
       }
-      for (let next of aa) got = What.what(op, got, next);
+      for (let next of aa) got = op(got, next);
       return got;
     } else {
       for (let next of aa) return next;

@@ -8,8 +8,8 @@ describe('What', () => {
 
     it('as - function, value, What instance', () => {
         assert.equal(What.as(x => x + 1).what(2), 3);
-        assert.equal(What.as(5).what(5), true);
-        assert.equal(What.as(5).what(3), false);
+        assert.equal(What.as(5).what(5), 5);
+        assert.equal(What.as(5).what(3), 5);
 
         const w = What.as(x => x);
         assert.equal(What.as(w), w); // should return same instance
@@ -22,21 +22,27 @@ describe('What', () => {
     });
 
     it('if - filters undefined or falsy', () => {
-        const f = What.if(What.as(x => x), x => x > 5);
-        assert.equal(f.what(4), undefined);
-        assert.equal(f.what(6), 6);
+        const f = What.as(x => x).if(x => x > 0);
+        assert.equal(f(0), undefined);
+        assert.equal(f(1), 1);
     });
 
-    it('which - filters values from multivalued source', () => {
-        const source = What.as(() => [1, 2, 3, 4]);
-        const filtered = source.which(n => n % 2 === 0);
-        assert.deepEqual([...filtered.what()], [2, 4]);
+    it('which - filters output from multivalued source', () => {
+        const source = What.as(x => x + 1);
+        const filtered = source.which(y => y > 0);
+        assert.equal(filtered(-1), undefined);
+        assert.equal(filtered(0), source(0));
     });
 
-    it('when - slices based on predicate', () => {
-        const f = What.as(() => [1, 2, 3, 4, 5]);
-        const sliced = f.when(n => n >= 3);
-        assert.deepEqual([...sliced.what()], [3, 4, 5]);
+    it('when - asynchronous if', async () => {
+      const f = What.as(x => x);
+      const g = f.when(async x => x > 0);
+      assert.strictEqual(typeof f(0), 'number');
+      assert.ok(g(0) instanceof Promise);
+      let result = await g(0);
+      assert.strictEqual(result, undefined);
+      result = await g(1);
+      assert.strictEqual(result, f(1));
     });
 
     it('sthen - sequential application', () => {
@@ -197,12 +203,6 @@ describe('What', () => {
         const s = What.self('sum', ['a', 'b'], 'z');
         assert.deepEqual(s.what(obj), { a: 2, b: 3, sum: obj.sum, z: 5 });
     });
-
-    it('what - general dispatcher', () => {
-        const f = (x, y) => x + y;
-        assert.equal(What.what(f, 2, 3), 5);
-        assert.equal(What.what(7), 7);
-    });
     
     describe("What callable", () => {
       it("should behave like a function when created from a function", () => {
@@ -213,8 +213,8 @@ describe('What', () => {
     
       it("should behave like a function when created from a constant", () => {
         const five = What.as(5);
-        assert.equal(five(5), true);
-        assert.equal(five(3), false);
+        assert.equal(five(5), 5);
+        assert.equal(five(3), 5);
       });
     
       it("instance methods should return callable What", () => {

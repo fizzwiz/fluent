@@ -1,5 +1,6 @@
 import { Each } from "./Each.js";
 import { Path } from '../util/Path.js';
+import { AsyncWhat } from "./AsyncWhat.js";
 
 /**
  * The `What` class provides a **functional abstraction layer** for fluent, composable logic.
@@ -78,7 +79,7 @@ export class What {
         if (f instanceof What) return f;
         if (typeof f !== "function") {
             const value = f;
-            f = arg => arg === value;
+            f = () => value;
         }
         const got = (...args) => f(...args);
         Object.setPrototypeOf(got, What.prototype);
@@ -92,9 +93,8 @@ export class What {
  * @param {Function} f Function to retype
  * @param {Object} instance Reference instance whose prototype to adopt
  * @returns {What}
- * @private
  */
-static #retype(f, instance) {
+static retype(f, instance) {
     Object.setPrototypeOf(f, Object.getPrototypeOf(instance));
     return f;
 }
@@ -105,13 +105,13 @@ static #retype(f, instance) {
     // ----------------------
 
     /**
-     * Filter input using predicate.
+     * Filter input using predicate(...args).
      *
      * @param {Function} [p=item => item!==undefined] Predicate
      * @returns {What}
      */
     if(p = item => item !== undefined) {
-        return What.#retype(What.if(this, p), this);
+        return What.retype(What.if(p, this), this);
     }
 
     /**
@@ -122,8 +122,8 @@ static #retype(f, instance) {
      * @returns {What}
      * @private
      */
-    static if(f, p = item => item !== undefined) {
-        return What.as((...args) => What.what(p, ...args) ? What.what(f, ...args) : undefined);
+    static if(predicate, f) {
+        return What.as((...args) => predicate(...args) ? f(...args) : undefined);
     }
 
     /**
@@ -133,7 +133,7 @@ static #retype(f, instance) {
      * @returns {What}
      */
     sthen(f) {
-        return What.#retype(What.sthen(this, f), this);
+        return What.retype(What.sthen(this, f), this);
     }
 
     /**
@@ -141,13 +141,14 @@ static #retype(f, instance) {
      *
      * @param {...Function} ff Functions to apply sequentially
      * @returns {What}
+     * @private
      */
     static sthen(...ff) {
         return What.as(arg => {
             let got = arg;
             for (let f of ff) {
                 if (got === undefined) break;
-                got = What.what(f, got);
+                got = f(got);
             }
             return got;
         });
@@ -189,17 +190,17 @@ else(f, errStringOrRegex = undefined) {
             const msg = err.message ?? JSON.stringify(err);
             // Only swallow the error if it matches the string or regex
             if ((errMsg && errMsg === msg) || (regex && regex.test(msg))) {
-                result = undefined; // fallback will execute
+                return f(...args, err); // fallback will execute
             } else {
                 throw err; // rethrow unmatched errors
             }
         }
 
-        if (result === undefined) result = f(...args);
+        if (result === undefined) return f(...args);
         return result;
     };
 
-    return What.#retype(got, this);
+    return What.retype(got, this);
 }
 
     /**
@@ -212,7 +213,7 @@ else(f, errStringOrRegex = undefined) {
         return What.as(arg => {
             let got;
             for (let f of ff) {
-                try { got = What.what(f, arg); }
+                try { got = f(arg); }
                 catch { got = undefined; }
                 if (got !== undefined) break;
             }
@@ -221,59 +222,56 @@ else(f, errStringOrRegex = undefined) {
     }
 
     /**
-     * Filter by predicate.
+     * Filter output by predicate(result, ...args).
      *
      * @param {Function} [p=item => item!==undefined] Predicate
      * @returns {What}
      */
     which(p = item => item !== undefined) {
-        return What.#retype(What.which(this, p), this);
+        return What.retype(What.which(this, p), this);
     }
 
     /**
      * Static version of `which`.
      *
      * @param {What|Function} f Function or What
-     * @param {Function} [p=item => item!==undefined] Predicate
+     * @param {Function} [p=item => item!==undefined] Predicate(value, ...args)
      * @returns {What}
+     * @private
      */
     static which(f, p = item => item !== undefined) {
-        return What.as(arg => {
-            const q = (value, i) => p(value, i, arg);
-            return Each.as(What.what(f, arg)).which(q);
+        return What.as((...args) => {
+            const value = f(...args);
+            return p(value, ...args)? value: undefined;
         });
     }
 
     /**
-     * Slice values by predicate or index.
+     * Asynchronous if. Executes `this` only if the asynchronous predicate returns true.
+     * The resulting What is asynchronous.
      *
-     * @param {Function|number} [p] Predicate or index
-     * @param {boolean} [start=true] Start or end
-     * @param {boolean} [inclusive=start] Include boundary
-     * @returns {What}
+     * @param {Function|number} [p] Asynchronous predicate 
+     * @returns {What} An asynchronous What
      */
-    when(p, start = true, inclusive = start) {
-        return What.#retype(What.when(this, p, start, inclusive), this);
+    when(p) {
+        return What.when(p, this);  // no retype here
     }
 
     /**
      * Static version of `when`.
      *
-     * @param {What|Function} f
-     * @param {Function|number} [predicateOrIndex] Predicate or index
-     * @param {boolean} [start=true]
-     * @param {boolean} [inclusive=start]
-     * @returns {What}
+     * @param {Function} predicate Asynchronous predicate
+     * @param {What|Function} f Function to execute when predicate resolves truthy
+     * @returns {What} Asynchronous What
+     * @private
      */
-    static when(f, predicateOrIndex, start = true, inclusive = start) {
-        const isIndex = typeof predicateOrIndex === 'number';
-        return What.as((...args) => {
-            const resolved = isIndex
-                ? predicateOrIndex
-                : (value, i) => What.what(predicateOrIndex, value, i, ...args);
-            return Each.as(What.what(f, ...args)).when(resolved, start, inclusive);
+    static when(predicate, f) {
+        return AsyncWhat.as(async (...args) => {
+            const cond = await predicate(...args);
+            return cond ? await f(...args) : undefined;
         });
     }
+
 
     /**
      * Zip multiple What instances.
@@ -282,7 +280,7 @@ else(f, errStringOrRegex = undefined) {
      * @returns {What}
      */
     match(...ff) {
-        return What.#retype(What.match(this, ...ff), this);
+        return What.retype(What.match(this, ...ff), this);
     }
 
     /**
@@ -290,14 +288,13 @@ else(f, errStringOrRegex = undefined) {
      *
      * @param {...What|Function} ff
      * @returns {What}
+     * @private
      */
     static match(...ff) {
         const got = ff.length < 2 ? arg => {
-            const res = What.what(ff[0], arg);
-            return res[Symbol.iterator]
-                ? Each.as(res).sthen(v => [arg, v])
-                : [arg, res];
-        } : arg => ff.map(f => What.what(f, arg));
+            const res = ff[0](arg);
+            return [arg, res];
+        } : arg => ff.map(f => f(arg));
         return What.as(got);
     }
 
@@ -318,7 +315,7 @@ each(f) {
             .which()                  // Filter undefined again
             .else();                  // Flatten the resulting Each of iterables
     };
-    return What.#retype(product, this);
+    return What.retype(product, this);
 }
 
 
@@ -327,6 +324,7 @@ each(f) {
  *
  * @param {...What|Function} ff Functions or What instances
  * @returns {What} A What returning all incremental path dispositions
+ * 
  */
 static each(...ff) {
     return What.as(itemOrPath => {
@@ -335,7 +333,7 @@ static each(...ff) {
 
         // Incremental extension along the path
         return path.across(
-            Each.as(What.what(ff[path.length - 1], path.last)).which()
+            Each.as(What.as(ff[path.length - 1])(path.last)).which()
         ).which();
     });
 }
@@ -349,7 +347,7 @@ static each(...ff) {
      * @returns {What}
      */
     self(indexOrNames = undefined, valueOrName = undefined) {
-        return What.#retype(What.self(this, indexOrNames, valueOrName), this);
+        return What.retype(What.self(this, indexOrNames, valueOrName), this);
     }
 
     /**
@@ -359,15 +357,16 @@ static each(...ff) {
      * @param {number|string|Array} [indexOrNames]
      * @param {*} [valueOrName]
      * @returns {What}
+     * @private
      */
     static self(f, indexOrNames = undefined, valueOrName = undefined) {
         let got;
         if (indexOrNames === undefined) {
             if (valueOrName === undefined) {
-                got = path => path.across(Each.as(What.what(f, path.last)).which());
+                got = path => path.across(Each.as(f(path.last)).which());
             } else {
                 got = (...args) => {
-                    const result = What.what(f, ...args);
+                    const result = f(...args);
                     if (result === undefined) return undefined;
                     const obj = {};
                     obj[valueOrName] = result;
@@ -377,13 +376,13 @@ static each(...ff) {
         } else if (typeof indexOrNames === 'number') {
             got = (...args) => {
                 const aa = args.splice(indexOrNames, 0, valueOrName);
-                return What.what(f, ...aa);
+                return f(...aa);
             };
         } else {
             got = obj => {
                 const args = Each.as(typeof indexOrNames === 'string' ? [indexOrNames] : indexOrNames)
                     .sthen(next => typeof next === 'string' ? obj[next] : next);
-                const result = What.what(typeof f === 'string' ? obj[f] : f, ...args);
+                const result = (typeof f === 'string' ? obj[f] : f)(...args);
                 if (result === undefined) return undefined;
                 if (valueOrName !== undefined) {
                     obj[valueOrName] = result;
@@ -395,21 +394,5 @@ static each(...ff) {
         return What.as(got);
     }
 
-    // ----------------------
-    // Utilities
-    // ----------------------
-
-    /**
-     * Evaluate a What, function, or constant value.
-     *
-     * @param {*} f What instance, function, or value
-     * @param {...*} args Arguments to evaluate
-     * @returns {*} Result
-     */
-    static what(f, ...args) {
-        return f instanceof What ? f.what(...args)
-            : typeof f === 'function' ? f(...args)
-            : f;
-    }
 
 }

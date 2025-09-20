@@ -1,4 +1,5 @@
 import { What } from "./What.js";
+import { Each } from "./Each.js";
 
 /**
  * The `AsyncEach` class implements a lazy, composable, **asynchronous iterable** interface.
@@ -131,33 +132,38 @@ export class AsyncEach {
       let current = start;
       while (current != null) {
         yield current;
-        current = await What.what(next, current);
+        current = await next(current);
       }
     };
     return got;
   }
 
-  /**
-   * Checks deep equality between two async iterables or iterables.
-   *
-   * @static
-   * @param {Iterable|AsyncIterable} aa
-   * @param {Iterable|AsyncIterable} bb
-   * @returns {Promise<boolean>} Resolves to true if equal
-   */
-  static async equal(aa, bb) {
+/**
+ * Checks deep equality between two async iterables or iterables.
+ *
+ * @static
+ * @param {Iterable|AsyncIterable} aa
+ * @param {Iterable|AsyncIterable} bb
+ * @returns {Promise<boolean>} Resolves to true if equal
+ */
+static async equal(aa, bb) {
+  if ((typeof aa !== 'string') && (Each.isIterable(aa) || AsyncEach.isAsyncIterable(aa)) &&
+      (typeof bb !== 'string') && (Each.isIterable(bb) || AsyncEach.isAsyncIterable(bb))) {
+
     const ait = AsyncEach.as(aa)[Symbol.asyncIterator]();
     const bit = AsyncEach.as(bb)[Symbol.asyncIterator]();
 
     while (true) {
-      const [a, b] = await Promise.all([ait.next(), bit.next()]);
+      const a = await ait.next();
+      const b = await bit.next();
       if (a.done || b.done) return a.done === b.done;
-      if (a.value instanceof AsyncEach || b.value instanceof AsyncEach) {
-        const eq = await AsyncEach.equal(a.value, b.value);
-        if (!eq) return false;
-      } else if (a.value !== b.value) return false;
+      if (!(await AsyncEach.equal(a.value, b.value))) return false;
     }
+  } else {
+    return aa === bb;
   }
+}
+
 
   /**
    * Internal check for async iterable.
@@ -302,7 +308,7 @@ export class AsyncEach {
       for await (const a of aa) {
         if (started) {
           yield a;
-        } else if (await What.what(p, a, i)) {
+        } else if (await p(a, i)) {
           started = true;
           if (inclusive) yield a;
         }
@@ -314,7 +320,7 @@ export class AsyncEach {
       let i = 0, ended = false;
       for await (const a of aa) {
         if (ended) break;
-        if (await What.what(p, a, i)) {
+        if (await p(a, i)) {
           ended = true;
           if (inclusive) yield a;
         } else {
@@ -468,7 +474,7 @@ export class AsyncEach {
           got = next;
           initialized = true;
         } else {
-          got = await What.what(op, got, next);
+          got = await op(got, next);
         }
       }
       return got;
