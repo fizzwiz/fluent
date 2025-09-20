@@ -375,9 +375,8 @@ static each(...ff) {
             }
         } else if (typeof indexOrNames === 'number') {
             got = (...args) => {
-                const aa = args.splice(indexOrNames, 0, valueOrName);
-                return f(...aa);
-            };
+                return f(...args.slice(0, indexOrNames), valueOrName, ...args.slice(indexOrNames));
+              };
         } else {
             got = obj => {
                 const args = Each.as(typeof indexOrNames === 'string' ? [indexOrNames] : indexOrNames)

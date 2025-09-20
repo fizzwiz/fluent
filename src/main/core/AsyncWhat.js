@@ -214,10 +214,7 @@ export class AsyncWhat {
     }
 
     static when(predicate, f) {
-        return AsyncWhat.as(async (...args) => {
-            const cond = await predicate(...args);
-            return cond ? await f(...args) : undefined;
-        });
+        return AsyncWhat.if(predicate, f);
     }
 
     /**
@@ -306,9 +303,9 @@ export class AsyncWhat {
         } else if (typeof indexOrNames === 'number') {
             // Inject argument at index
             got = async (...args) => {
-                const aa = args.splice(indexOrNames, 0, valueOrName);
-                return await f(...aa);
-            };
+                return await f(...args.slice(0, indexOrNames), valueOrName, ...args.slice(indexOrNames));
+              };
+              
         } else {
             // Extract properties from object
             got = async obj => {
