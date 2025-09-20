@@ -43,21 +43,19 @@
 
 
     <section>
-        <article><h1>@fizzwiz/fluent</h1>
+        <article><h1>👅 @fizzwiz/fluent</h1>
 <blockquote>
 <p>Mirror the natural flow of thought in your code.</p>
 </blockquote>
-<p><code>@fizzwiz/fluent</code> is a <strong>lightweight and expressive</strong> JavaScript library that simplifies complex logic
-into elegant, intuitive, and fluent syntax. It encourages code that reads like natural language,
-while remaining concise and powerful.</p>
+<p><code>@fizzwiz/fluent</code> is a <strong>lightweight and expressive</strong> JavaScript library that transforms complex logic into elegant, intuitive, and fluent syntax. It encourages code that reads like natural language while remaining concise and powerful.</p>
 <hr>
 <h2>✨ Features</h2>
 <ul>
-<li>🧠 <strong>Thoughtful API</strong> – Code reads like how you think.</li>
+<li>🧠 <strong>Thoughtful API</strong> – Code reads the way you think.</li>
 <li>🧩 <strong>Modular Structure</strong> – Clean separation by concept and responsibility.</li>
 <li>🚀 <strong>Dual Environment Support</strong> – Works in both Node.js and browsers.</li>
-<li>⚡ <strong>Async Support</strong> – Seamlessly handle promises and async iterables with <code>AsyncEach</code>.</li>
-<li>📚 <strong>Zero Learning Curve</strong> – Familiar, fluent, and instantly productive.</li>
+<li>⚡ <strong>Async Support</strong> – Handle promises and async iterables seamlessly with <code>AsyncEach</code> and <code>AsyncWhat</code>.</li>
+<li>📚 <strong>Zero Learning Curve</strong> – Instantly productive with familiar, fluent patterns.</li>
 </ul>
 <hr>
 <h2>🧠 Guides &amp; Concepts</h2>
@@ -65,47 +63,62 @@ while remaining concise and powerful.</p>
 👉 <a href="https://fluent.blog.fizzwiz.cloud">fluent.blog.fizzwiz.cloud</a></p>
 <hr>
 <h2>➰ <code>Each</code> Class — Abstract Iteration</h2>
-<p>The <code>Each</code> class represents a composable, lazy iterable. It defines an <code>[Symbol.iterator]()</code> method and enables expressive operations for building and manipulating iterations without eagerly executing them.</p>
+<p>The <code>Each</code> class represents a composable, <strong>lazy iterable</strong>. It implements <code>[Symbol.iterator]()</code> and enables expressive operations for building and manipulating sequences without eager execution.</p>
 <h3>Key Highlights</h3>
 <ul>
-<li><strong>Fluent operations:</strong> filter, map, reduce, combine, and traverse sequences.</li>
-<li><strong>Supports infinite and recursive sequences</strong> with lazy evaluation.</li>
-<li><strong>Declarative composition:</strong> slice, zip, concatenate, and compute Cartesian products.</li>
+<li><strong>Fluent operations:</strong> <code>filter</code>, <code>map</code>, <code>reduce</code>, <code>combine</code>, <code>traverse</code>.</li>
+<li><strong>Supports infinite and recursive sequences</strong> through lazy evaluation.</li>
+<li><strong>Declarative composition:</strong> <code>slice</code>, <code>zip</code>, <code>concat</code>, and compute Cartesian products.</li>
 </ul>
 <hr>
-<h2>🌀 <code>AsyncEach</code> Class — Asynchronous Iteration</h2>
-<p>The <code>AsyncEach</code> class complements <code>Each</code> by providing a fluent interface for <strong>async iterables and promises</strong>. It allows the same composable operations as <code>Each</code>, but asynchronously.</p>
+<h2>⏳➰ <code>AsyncEach</code> Class — Asynchronous Iteration</h2>
+<p><code>AsyncEach</code> complements <code>Each</code> by providing a fluent interface for <strong>async iterables and promises</strong>. It implements <code>[Symbol.asyncIterator]()</code> and allows the same composable operations as <code>Each</code>, but asynchronously.</p>
 <h3>Key Highlights</h3>
 <ul>
-<li><strong>Async resolution:</strong> <code>.when()</code> without arguments converts iterables of promises into an <code>AsyncEach</code>.</li>
-<li><strong>Fluent async transformations:</strong> <code>sthen()</code>, <code>if()</code>, <code>else()</code>, <code>match()</code>, and <code>each()</code> work with async iterables.</li>
+<li><strong>Async resolution:</strong> <code>.when()</code> converts iterables of promises into an <code>AsyncEach</code>.</li>
+<li><strong>Fluent async transformations:</strong> <code>sthen()</code>, <code>if()</code>, <code>else()</code>, ... work with async functions or promises.</li>
 <li><strong>Seamless integration:</strong> Combine synchronous <code>Each</code> and asynchronous <code>AsyncEach</code> pipelines.</li>
-<li><strong>Lazy async evaluation:</strong> No promises are awaited until iteration occurs.</li>
+<li><strong>Lazy async evaluation:</strong> Promises are awaited only when iterated.</li>
 </ul>
 <h3>Example</h3>
-<pre class="prettyprint source lang-js"><code>const results = Each.of(
+<pre class="prettyprint source lang-js"><code>// Working with Promises
+const each = Each.of(
   Promise.resolve(1),
   Promise.resolve(2),
   Promise.resolve(3)
 )
-.sthen(async n => n * 2);
+.sthen(p => p.then(n => n * 2)); 
 
-for await (const value of results.when()) {  // await when() the promised results are available
+// Converting an iterable of promises into an async iterable of (non-resolved-yet) values
+const asyncEach = each.when();
+
+// Iterating the async iterable
+for await (const value of asyncEach) { 
   console.log(value); // 2, 4, 6
 }
+
+// Working with values through the AsyncEach interface
+const transformed = asyncEach.sthen(n => n * 2); 
+
+// Actually generating the values
+const values = await transformed.toArray(); // [4, 8, 12]
+
+for (const value of values) {
+  console.log(value); // 4, 8, 12
+}
+
 </code></pre>
 <hr>
 <h2>❓ <code>What</code> Class — Functional Abstraction</h2>
-<p>The <code>What</code> class provides a functional abstraction for <strong>declarative, functional logic</strong>. Every <code>What</code> returned by its methods is <strong>callable as a function</strong> and, at the same time, provides a <strong>fluent semantic</strong> to restrict, compose, and transform functions.</p>
+<p><code>What</code> provides a <strong>declarative, functional abstraction</strong>. Every <code>What</code> instance is <strong>callable as a function</strong> and provides a <strong>fluent interface</strong> to compose, restrict, and transform functions.</p>
 <h3>Key Highlights</h3>
 <ul>
 <li>Works seamlessly with <code>Each</code> and <code>AsyncEach</code>.</li>
-<li>Supports the <strong>same 9 core semantic methods</strong> shared across all three classes.</li>
+<li>Supports the <strong>same 9 core semantic methods</strong> shared across all classes.</li>
 </ul>
 <h3>Example</h3>
 <pre class="prettyprint source lang-js"><code>const double = What.as(x => x * 2);
-const result = double.what(5);
-console.log(result); // 10
+console.log(double(5)); // 10
 console.log(double.what(5) === double(5)); // true
 
 const conditional = double.if(x => x >= 3).else(x => x);
@@ -113,8 +126,31 @@ console.log(conditional.what(2)); // 2
 console.log(conditional.what(4)); // 8
 </code></pre>
 <hr>
+<h2>⏳❓ <code>AsyncWhat</code> Class — Asynchronous Functional Abstraction</h2>
+<p><code>AsyncWhat</code> extends <code>What</code> into the <strong>asynchronous domain</strong>, allowing fluent composition of async functions. Like <code>What</code>, it is <strong>callable</strong> and <strong>chainable</strong>, but always returns <strong>Promises</strong>.</p>
+<h3>Key Highlights</h3>
+<ul>
+<li>Fully asynchronous functional abstraction.</li>
+<li>Integrates seamlessly with <code>Each</code>, <code>AsyncEach</code>, and <code>What</code>.</li>
+</ul>
+<h3>Example</h3>
+<pre class="prettyprint source lang-js"><code>
+// A synchronous What
+const double = What.as(x => x * 2);
+
+// Create a conditional AsyncWhat using an asynchronous predicate
+const conditional = double
+  .when(async x => x >= 3) // async predicate converts What → AsyncWhat
+  .else(x => x);           // chain fluency is preserved
+
+// Use the conditional function
+console.log(await conditional(2)); // 2
+console.log(await conditional(4)); // 8
+
+</code></pre>
+<hr>
 <h2>⚙️ Shared Semantic Across Classes</h2>
-<p><code>Each</code>, <code>AsyncEach</code>, and <code>What</code> share a <strong>common fluent API</strong> composed of 9 methods:</p>
+<p><code>Each</code>, <code>AsyncEach</code>, <code>What</code>, and <code>AsyncWhat</code> share <strong>9 core fluent methods</strong>:</p>
 <table>
 <thead>
 <tr>
@@ -125,27 +161,27 @@ console.log(conditional.what(4)); // 8
 <tbody>
 <tr>
 <td><code>if()</code></td>
-<td>Conditional filtering</td>
+<td>Input filtering</td>
 </tr>
 <tr>
 <td><code>sthen()</code></td>
-<td>A safe then, distinguishable from thenable <code>then</code></td>
+<td>Safe then, distinct from promise <code>.then</code></td>
 </tr>
 <tr>
 <td><code>else()</code></td>
-<td>Fallback for undefined or missing values</td>
+<td>Fallback for undefined values or errors</td>
 </tr>
 <tr>
 <td><code>which()</code></td>
-<td>Filter sequences by predicate</td>
+<td>Output filtering</td>
 </tr>
 <tr>
 <td><code>when()</code></td>
-<td>Slice sequences or resolve async iterables</td>
+<td>Async input filtering, bridges sync &amp; async</td>
 </tr>
 <tr>
 <td><code>match()</code></td>
-<td>Zip or match multiple sequences</td>
+<td>Zip multiple sequences</td>
 </tr>
 <tr>
 <td><code>each()</code></td>
@@ -153,23 +189,22 @@ console.log(conditional.what(4)); // 8
 </tr>
 <tr>
 <td><code>self()</code></td>
-<td>Infinite repetition or functional path expansion</td>
+<td>Infinite repetition</td>
 </tr>
 <tr>
 <td><code>what()</code></td>
-<td>Reduce or retrieve single value</td>
+<td>Reduce or retrieve a single value</td>
 </tr>
 </tbody>
 </table>
-<p>This unified interface allows <strong>seamless interchange</strong> between synchronous iteration (<code>Each</code>), asynchronous iteration (<code>AsyncEach</code>), and functional abstraction (<code>What</code>) without breaking the natural flow of your code.</p>
+<p>This unified API allows <strong>interchangeable use</strong> between synchronous (<code>Each</code> / <code>What</code>) and asynchronous (<code>AsyncEach</code> / <code>AsyncWhat</code>) pipelines without breaking the natural flow of your code.</p>
 <hr>
 <h2>🧠 Philosophy</h2>
-<p>The design of <code>@fizzwiz/fluent</code> encourages:</p>
+<p><code>@fizzwiz/fluent</code> is designed to encourage:</p>
 <ul>
 <li><strong>Lazy evaluation</strong> — computations occur only when needed.</li>
 <li><strong>Fluent composition</strong> — operations chain naturally.</li>
-<li><strong>Clear distinction from native promises</strong> — <code>sthen()</code> avoids ambiguity with thenable Promises in built-in constructs (<code>then</code>/<code>await</code>).</li>
-<li><strong>Declarative problem solving</strong> — express complex sequences and logic as readable statements which can even handle infinite iterations.</li>
+<li><strong>Declarative problem solving</strong> — express complex sequences and logic as readable statements, including infinite iterations.</li>
 </ul></article>
     </section>
 
@@ -187,7 +222,7 @@ console.log(conditional.what(4)); // 8
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sat Sep 20 2025 08:15:59 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sat Sep 20 2025 10:37:46 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

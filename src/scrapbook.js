@@ -1,18 +1,31 @@
 import { What } from "./main/core/What.js";
 import { Path } from "./main/util/Path.js";
 import assert from "assert";
+import { Each } from "./main/core/Each.js";
 
-const f = What.as(x => x);
-const g = f.when(async x => x > 0);
+// Working with Promises
+const each = Each.of(
+  Promise.resolve(1),
+  Promise.resolve(2),
+  Promise.resolve(3)
+)
+.sthen(p => p.then(n => n * 2)); 
 
-assert.strictEqual(typeof f(0), 'number');
-assert.ok(g(0) instanceof Promise);
+// Converting an iterable of promises into an async iterable of (non-resolved-yet) values
+const asyncEach = each.when();
 
-(async () => {      
-  let result = await g(0);
-  assert.strictEqual(result, undefined);
+// Iterating the async iterable
+for await (const value of asyncEach) { 
+  console.log(value); // 2, 4, 6
+}
 
-  result = await g(1);
-  assert.strictEqual(result, f(1));
-})();
+// Working with values through the AsyncEach interface
+const transformed = asyncEach.sthen(async n => n * 2); 
+
+// Actually generating the values
+const values = await transformed.toArray(); // [4, 8, 12]
+
+for (const value of values) {
+  console.log(value); // 4, 8, 12
+}
 
