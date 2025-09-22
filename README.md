@@ -96,8 +96,9 @@ console.log(double(5)); // 10
 console.log(double.what(5) === double(5)); // true
 
 const conditional = double.if(x => x >= 3).else(x => x);
+console.log(conditional.what(3)); // 6
 console.log(conditional.what(2)); // 2
-console.log(conditional.what(4)); // 8
+
 ```
 
 ---
@@ -158,3 +159,12 @@ This unified API allows **interchangeable use** between synchronous (`Each` / `W
 * **Lazy evaluation** — computations occur only when needed.
 * **Fluent composition** — operations chain naturally.
 * **Declarative problem solving** — express complex sequences and logic as readable statements, including infinite iterations.
+
+---
+
+## 🔗 Links
+
+- 📚 [In-depth guides on the blog](https://fluent-js.blogspot.com)
+- 🌐 [Bundle version for browser execution (jsDelivr)](https://cdn.jsdelivr.net/gh/fizzwiz/fluent/dist/fluent.bundle.js)
+- 💬 [GitHub Pages](https://fizzwiz.github.io/fluent/)
+- 🐱 [GitHub Sources](https://github.com/fizzwiz/fluent)
