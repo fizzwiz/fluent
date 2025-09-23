@@ -1,10 +1,11 @@
 import { Each } from './core/Each.js';
 import { AsyncEach } from './core/AsyncEach.js';
 import { What } from './core/What.js';
+import { AsyncWhat } from './core/AsyncWhat.js';
 import { Scope } from './util/Scope.js';
 import { Path } from './util/Path.js';
 
-export { Each, AsyncEach, What, Scope, Path };
+export { Each, AsyncEach, What, AsyncWhat, Scope, Path };
 
 /**
  * The `core` module defines three fundamental classes for declarative, fluent programming:
