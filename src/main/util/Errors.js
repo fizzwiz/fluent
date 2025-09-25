@@ -41,3 +41,17 @@ export class Errors {
     }
   }
 }
+
+/**
+ * Error thrown when an operation times out.
+ * @extends Error
+ */
+export class TimeoutError extends Error {
+  constructor(millis, message = "Operation timed out", cause) {
+    super(message);
+    this.millis = millis;
+    this.name = this.constructor.name;
+    if (cause) this.cause = cause;
+  }
+}
+

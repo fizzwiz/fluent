@@ -165,7 +165,7 @@ static retype(f, instance) {
  *   the matcher will trigger the fallback; unmatched errors are re-thrown.
  * - If `matcher` is omitted, all errors are caught and passed to the fallback.
  *
- * Supported matcher types (checked via `Errors.matches`):
+ * Supported matcher types:
  * - number → matches `statusCode` (HttpError)
  * - string → matches class name (e.g. "HttpError", "DomError")
  * - RegExp → tests against error message
@@ -177,14 +177,6 @@ static retype(f, instance) {
  *                                                    If omitted, all errors are caught.
  * @returns {What} A new What instance that applies the fallback logic.
  *
- * @example
- * const fn = What.as(x => {
- *   if (x < 0) throw new Error("negative");
- *   return undefined;
- * }).else(x => x * 2, /negative/);
- *
- * fn(-1); // => -2  (error "negative" matched, fallback applied)
- * fn(3);  // => 6   (primary returned undefined, fallback applied)
  */
 else(f, matcher) {
     const got = (...args) => {
@@ -321,7 +313,6 @@ each(f) {
     return What.retype(product, this);
 }
 
-
 /**
  * Static version: generates a search space of Paths across multiple Functions.
  *
@@ -341,14 +332,33 @@ static each(...ff) {
     });
 }
 
+/**
+ * Self-application: adapts this What for argument binding, or
+ * context property mapping, depending on the type of the first argument.
+ *
+ * Overloads:
+ *
+ * 1. Argument-binding mode (number + value):
+ *    - `self(index, value)` → injects `value` into the arguments at position `index`.
+ *
+ * 2. Context-mapping mode (string):
+ *    - `self(name)` → extracts `ctx[name]` as input to this What.
+ *    - `self(nameIn, nameOut)` → uses `ctx[nameIn]` as input, and stores the result
+ *      into `ctx[nameOut]`.
+ *
+ * 3. Context-mapping mode (string[]):
+ *    - `self([name1, name2, ...])` → extracts multiple properties from `ctx` as arguments.
+ *    - `self([name1, name2, ...], nameOut)` → same as above, but stores the result
+ *      back into `ctx[nameOut]`.
+ *
+ * @param {number|string|string[]} [indexOrNames]
+ *        Argument index, or property name(s) to extract from ctx.
+ * @param {string} [valueOrName]
+ *        Argument value to inject (if first arg is a number), or output property
+ *        name for storing results (if first arg is a string or string[]).
+ * @returns {What}
+ */
 
-    /**
-     * Repeat self or apply mapping to object/array.
-     *
-     * @param {number|string|Array} [indexOrNames]
-     * @param {*} [valueOrName]
-     * @returns {What}
-     */
     self(indexOrNames = undefined, valueOrName = undefined) {
         return What.retype(What.self(this, indexOrNames, valueOrName), this);
     }
@@ -377,9 +387,14 @@ static each(...ff) {
                 };
             }
         } else if (typeof indexOrNames === 'number') {
-            got = (...args) => {
-                return f(...args.slice(0, indexOrNames), valueOrName, ...args.slice(indexOrNames));
-              };
+            if (valueOrName === undefined) {
+                // execute within timeout
+                got = ctx => What.within(indexOrNames, () => this(ctx), new TimeoutError(indexOrNames));
+            } else {
+                got = (...args) => {
+                    return f(...args.slice(0, indexOrNames), valueOrName, ...args.slice(indexOrNames));
+                };
+            }
         } else {
             got = obj => {
                 const args = Each.as(typeof indexOrNames === 'string' ? [indexOrNames] : indexOrNames)

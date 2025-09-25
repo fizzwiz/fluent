@@ -1,6 +1,7 @@
 import { Each } from "./Each.js";
 import { AsyncEach } from "./AsyncEach.js";
 import { Path } from '../util/Path.js';
+import { Errors, TimeoutError } from "../util/Errors.js";
 
 /**
  * `AsyncWhat` is the asynchronous counterpart of {@link What}.
@@ -138,27 +139,40 @@ export class AsyncWhat {
     }
 
     /**
-     * Provide fallback if function returns `undefined` or throws a matching error.
+     * Provide a fallback if this What/function returns `undefined` or throws a matching error.
      *
-     * @param {Function} f Fallback function
-     * @param {string|RegExp} [errStringOrRegex] Error match
-     * @returns {AsyncWhat}
+     * This dynamic version of `else` allows:
+     * - Passing a fallback function or What instance `f` that will be evaluated if the primary
+     *   function returns `undefined`.
+     * - Optionally filtering caught errors by a matcher. Only errors that match
+     *   the matcher will trigger the fallback; unmatched errors are re-thrown.
+     * - If `matcher` is omitted, all errors are caught and passed to the fallback.
+     *
+     * Supported matcher types:
+     * - number → matches `statusCode` (if the Error provides such a property)
+     * - string → matches class name (e.g. "HttpError", "DomError")
+     * - RegExp → tests against error message
+     * - function → custom predicate `(err) => boolean`
+     *
+     * @param {Function|What|AsyncWhat} f - Fallback function or What instance to use if the primary returns `undefined` or a matching error is thrown.
+     *                             If a matching error occurs, it is passed as the last argument to `f`.
+     * @param {string|number|RegExp|Function} [matcher] - Optional matcher to filter caught errors.
+     *                                                    If omitted, all errors are caught.
+     * @returns {AsyncWhat} A new AsyncWhat instance that applies the fallback logic.
+     *
      */
-    else(f, errStringOrRegex = undefined) {
-        const errMsg = typeof errStringOrRegex === 'string' ? errStringOrRegex : undefined;
-        const regex = errStringOrRegex instanceof RegExp ? errStringOrRegex : undefined;
+    else(f, matcher = undefined) {
 
         const got = async (...args) => {
             let result;
             try {
                 result = await this(...args);
             } catch (err) {
-                const msg = err.message ?? JSON.stringify(err);
-                if ((errMsg && errMsg === msg) || (regex && regex.test(msg))) {
-                    return await f(...args, err);
-                } else {
-                    throw err;
+               // If no matcher provided, fallback catches all errors
+                if (!matcher || Errors.matches(err, matcher)) {
+                    return f(...args, err);
                 }
+                throw err; // rethrow unmatched errors
             }
 
             if (result === undefined) return await f(...args);
@@ -274,19 +288,46 @@ export class AsyncWhat {
     }
 
     /**
-     * Self-application: binds inputs/outputs to object properties or paths.
+     * Self-application: adapts this AsyncWhat for timeouts, argument binding, or
+     * context property mapping, depending on the type of the first argument.
      *
-     * @param {number|string|string[]} [indexOrNames] Input index or property names
-     * @param {string} [valueOrName] Output property name
+     * Overloads:
+     *
+     * 1. Timeout mode (number only):
+     *    - `self(ms)` → runs this AsyncWhat with a timeout in milliseconds.
+     *      Throws a TimeoutError if execution exceeds `ms`.
+     *
+     * 2. Argument-binding mode (number + value):
+     *    - `self(index, value)` → injects `value` into the arguments at position `index`.
+     *
+     * 3. Context-mapping mode (string):
+     *    - `self(name)` → extracts `ctx[name]` as input to this AsyncWhat.
+     *    - `self(nameIn, nameOut)` → uses `ctx[nameIn]` as input, and stores the result
+     *      into `ctx[nameOut]`.
+     *
+     * 4. Context-mapping mode (string[]):
+     *    - `self([name1, name2, ...])` → extracts multiple properties from `ctx` as arguments.
+     *    - `self([name1, name2, ...], nameOut)` → same as above, but stores the result
+     *      back into `ctx[nameOut]`.
+     *
+     * @param {number|string|string[]} [timeoutOrIndexOrNames]
+     *        Timeout in ms, argument index, or property name(s) to extract from ctx.
+     * @param {string} [valueOrName]
+     *        Argument value to inject (if first arg is a number), or output property
+     *        name for storing results (if first arg is a string or string[]).
      * @returns {AsyncWhat}
      */
-    self(indexOrNames = undefined, valueOrName = undefined) {
-        return AsyncWhat.retype(AsyncWhat.self(this, indexOrNames, valueOrName), this);
+    self(timeoutOrIndexOrNames = undefined, valueOrName = undefined) {
+        return AsyncWhat.retype(AsyncWhat.self(this, timeoutOrIndexOrNames, valueOrName), this);
     }
 
-    static self(f, indexOrNames = undefined, valueOrName = undefined) {
+    /**
+     * 
+     * @private
+     */
+    static self(f, timeoutOrIndexOrNames = undefined, valueOrName = undefined) {
         let got;
-        if (indexOrNames === undefined) {
+        if (timeoutOrIndexOrNames === undefined) {
             if (valueOrName === undefined) {
                 // Path-expanding mode
                 got = async path => path.across(await AsyncEach.as(await f(path.last)).which().toArray());
@@ -300,18 +341,22 @@ export class AsyncWhat {
                     return obj;
                 };
             }
-        } else if (typeof indexOrNames === 'number') {
-            // Inject argument at index
-            got = async (...args) => {
-                return await f(...args.slice(0, indexOrNames), valueOrName, ...args.slice(indexOrNames));
-              };
-              
+        } else if (typeof timeoutOrIndexOrNames === 'number') {
+            if (valueOrName === undefined) {
+                // execute within timeout
+                got = async ctx => await AsyncWhat.within(timeoutOrIndexOrNames, () => f(ctx), new TimeoutError(timeoutOrIndexOrNames));
+            } else {
+                // Inject argument at index
+                got = async (...args) => {
+                    return await f(...args.slice(0, timeoutOrIndexOrNames), valueOrName, ...args.slice(timeoutOrIndexOrNames));
+                };
+            }              
         } else {
             // Extract properties from object
             got = async obj => {
                 let args = [];
                 for await (let next of AsyncEach.as(
-                    typeof indexOrNames === 'string' ? [indexOrNames] : indexOrNames
+                    typeof timeoutOrIndexOrNames === 'string' ? [timeoutOrIndexOrNames] : timeoutOrIndexOrNames
                 ).sthen(next => typeof next === 'string' ? obj[next] : next)) {
                     args.push(next);
                 };
@@ -327,4 +372,27 @@ export class AsyncWhat {
         return AsyncWhat.as(got);
     }
 
+    /**
+     * Runs an async function with a timeout.
+     * Rejects with a given error if it doesn’t resolve within the given time.
+     *
+     * @param {number} timeoutMs - Timeout in milliseconds.
+     * @param {function(): Promise<any>} fn - Async function to run.
+     * @param {Error} [error] - Error to reject with on timeout
+     * @returns {Promise<any>}
+     * @private
+     */
+    static async within(timeoutMs, fn, error = new Error(`Operation timed out after ${timeoutMs}ms`)) {
+        let timer;
+        try {
+        return await Promise.race([
+            fn(),
+            new Promise((_, reject) => {
+            timer = setTimeout(() => reject(error), timeoutMs);
+            })
+        ]);
+        } finally {
+        clearTimeout(timer);
+        }
+    }
 }

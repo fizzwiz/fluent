@@ -302,7 +302,7 @@ async-compatible data transformations, filters, and matchers.</p>
     
 
     
-    <h4 class="name" id="else"><span class="type-signature"></span>else<span class="signature">(f, errStringOrRegex<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
+    <h4 class="name" id="else"><span class="type-signature"></span>else<span class="signature">(f, matcher<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
     
 
     
@@ -310,7 +310,22 @@ async-compatible data transformations, filters, and matchers.</p>
 
 
 <div class="description">
-    <p>Provide fallback if function returns <code>undefined</code> or throws a matching error.</p>
+    <p>Provide a fallback if this What/function returns <code>undefined</code> or throws a matching error.</p>
+<p>This dynamic version of <code>else</code> allows:</p>
+<ul>
+<li>Passing a fallback function or What instance <code>f</code> that will be evaluated if the primary
+function returns <code>undefined</code>.</li>
+<li>Optionally filtering caught errors by a matcher. Only errors that match
+the matcher will trigger the fallback; unmatched errors are re-thrown.</li>
+<li>If <code>matcher</code> is omitted, all errors are caught and passed to the fallback.</li>
+</ul>
+<p>Supported matcher types:</p>
+<ul>
+<li>number → matches <code>statusCode</code> (if the Error provides such a property)</li>
+<li>string → matches class name (e.g. &quot;HttpError&quot;, &quot;DomError&quot;)</li>
+<li>RegExp → tests against error message</li>
+<li>function → custom predicate <code>(err) =&gt; boolean</code></li>
+</ul>
 </div>
 
 
@@ -355,6 +370,12 @@ async-compatible data transformations, filters, and matchers.</p>
             
                 
 <span class="param-type">function</span>
+|
+
+<span class="param-type"><a href="What.html">What</a></span>
+|
+
+<span class="param-type"><a href="AsyncWhat.html">AsyncWhat</a></span>
 
 
             
@@ -372,14 +393,15 @@ async-compatible data transformations, filters, and matchers.</p>
 
             
 
-            <td class="description last"><p>Fallback function</p></td>
+            <td class="description last"><p>Fallback function or What instance to use if the primary returns <code>undefined</code> or a matching error is thrown.
+If a matching error occurs, it is passed as the last argument to <code>f</code>.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>errStringOrRegex</code></td>
+                <td class="name"><code>matcher</code></td>
             
 
             <td class="type">
@@ -388,7 +410,13 @@ async-compatible data transformations, filters, and matchers.</p>
 <span class="param-type">string</span>
 |
 
+<span class="param-type">number</span>
+|
+
 <span class="param-type">RegExp</span>
+|
+
+<span class="param-type">function</span>
 
 
             
@@ -408,7 +436,8 @@ async-compatible data transformations, filters, and matchers.</p>
 
             
 
-            <td class="description last"><p>Error match</p></td>
+            <td class="description last"><p>Optional matcher to filter caught errors.
+If omitted, all errors are caught.</p></td>
         </tr>
 
     
@@ -472,6 +501,10 @@ async-compatible data transformations, filters, and matchers.</p>
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <p>A new AsyncWhat instance that applies the fallback logic.</p>
+</div>
+
 
 
 <dl>
@@ -1003,7 +1036,7 @@ async-compatible data transformations, filters, and matchers.</p>
     
 
     
-    <h4 class="name" id="self"><span class="type-signature"></span>self<span class="signature">(indexOrNames<span class="signature-attributes">opt</span>, valueOrName<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
+    <h4 class="name" id="self"><span class="type-signature"></span>self<span class="signature">(timeoutOrIndexOrNames<span class="signature-attributes">opt</span>, valueOrName<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
     
 
     
@@ -1011,7 +1044,40 @@ async-compatible data transformations, filters, and matchers.</p>
 
 
 <div class="description">
-    <p>Self-application: binds inputs/outputs to object properties or paths.</p>
+    <p>Self-application: adapts this AsyncWhat for timeouts, argument binding, or
+context property mapping, depending on the type of the first argument.</p>
+<p>Overloads:</p>
+<ol>
+<li>
+<p>Timeout mode (number only):</p>
+<ul>
+<li><code>self(ms)</code> → runs this AsyncWhat with a timeout in milliseconds.
+Throws a TimeoutError if execution exceeds <code>ms</code>.</li>
+</ul>
+</li>
+<li>
+<p>Argument-binding mode (number + value):</p>
+<ul>
+<li><code>self(index, value)</code> → injects <code>value</code> into the arguments at position <code>index</code>.</li>
+</ul>
+</li>
+<li>
+<p>Context-mapping mode (string):</p>
+<ul>
+<li><code>self(name)</code> → extracts <code>ctx[name]</code> as input to this AsyncWhat.</li>
+<li><code>self(nameIn, nameOut)</code> → uses <code>ctx[nameIn]</code> as input, and stores the result
+into <code>ctx[nameOut]</code>.</li>
+</ul>
+</li>
+<li>
+<p>Context-mapping mode (string[]):</p>
+<ul>
+<li><code>self([name1, name2, ...])</code> → extracts multiple properties from <code>ctx</code> as arguments.</li>
+<li><code>self([name1, name2, ...], nameOut)</code> → same as above, but stores the result
+back into <code>ctx[nameOut]</code>.</li>
+</ul>
+</li>
+</ol>
 </div>
 
 
@@ -1049,7 +1115,7 @@ async-compatible data transformations, filters, and matchers.</p>
 
         <tr>
             
-                <td class="name"><code>indexOrNames</code></td>
+                <td class="name"><code>timeoutOrIndexOrNames</code></td>
             
 
             <td class="type">
@@ -1081,7 +1147,7 @@ async-compatible data transformations, filters, and matchers.</p>
 
             
 
-            <td class="description last"><p>Input index or property names</p></td>
+            <td class="description last"><p>Timeout in ms, argument index, or property name(s) to extract from ctx.</p></td>
         </tr>
 
     
@@ -1114,7 +1180,8 @@ async-compatible data transformations, filters, and matchers.</p>
 
             
 
-            <td class="description last"><p>Output property name</p></td>
+            <td class="description last"><p>Argument value to inject (if first arg is a number), or output property
+name for storing results (if first arg is a string or string[]).</p></td>
         </tr>
 
     
@@ -2869,13 +2936,13 @@ async-compatible data transformations, filters, and matchers.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-core.html">core</a></li><li><a href="module-util.html">util</a></li></ul><h3>Classes</h3><ul><li><a href="AsyncEach.html">AsyncEach</a></li><li><a href="AsyncWhat.html">AsyncWhat</a></li><li><a href="Each.html">Each</a></li><li><a href="Errors.html">Errors</a></li><li><a href="Path.html">Path</a></li><li><a href="Scope.html">Scope</a></li><li><a href="What.html">What</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-core.html">core</a></li><li><a href="module-util.html">util</a></li></ul><h3>Classes</h3><ul><li><a href="AsyncEach.html">AsyncEach</a></li><li><a href="AsyncWhat.html">AsyncWhat</a></li><li><a href="Each.html">Each</a></li><li><a href="Errors.html">Errors</a></li><li><a href="Path.html">Path</a></li><li><a href="Scope.html">Scope</a></li><li><a href="TimeoutError.html">TimeoutError</a></li><li><a href="What.html">What</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Sep 25 2025 08:17:28 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Sep 25 2025 13:42:19 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

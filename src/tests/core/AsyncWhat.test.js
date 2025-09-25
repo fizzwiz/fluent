@@ -75,7 +75,7 @@ describe('AsyncWhat', () => {
       const fn = AsyncWhat.as(x => {
         if (x < 0) throw new Error("negative");
         return x;
-      }).else(x => Math.abs(x), "negative");
+      }).else(x => Math.abs(x), /negative/);
 
       assert.strictEqual(await fn(-5), 5);
       assert.strictEqual(await fn(10), 10);
