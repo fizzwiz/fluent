@@ -75,7 +75,7 @@ describe('What', () => {
         const fn = What.as(x => {
           if (x < 0) throw new Error("negative");
           return x;
-        }).else(x => Math.abs(x), "negative");
+        }).else(x => Math.abs(x), /negative/);
     
         assert.strictEqual(fn(-5), 5);
         assert.strictEqual(fn(10), 10);

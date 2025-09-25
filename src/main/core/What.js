@@ -1,6 +1,7 @@
 import { Each } from "./Each.js";
 import { Path } from '../util/Path.js';
 import { AsyncWhat } from "./AsyncWhat.js";
+import { Errors } from "../util/Errors.js";
 
 /**
  * The `What` class provides a **functional abstraction layer** for fluent, composable logic.
@@ -160,12 +161,20 @@ static retype(f, instance) {
  * This dynamic version of `else` allows:
  * - Passing a fallback function or What instance `f` that will be evaluated if the primary
  *   function returns `undefined`.
- * - Optionally filtering caught errors by a string or regular expression. Only errors whose
- *   message matches `errStringOrRegex` (or whose stringified form matches) will be swallowed; other errors are re-thrown.
+ * - Optionally filtering caught errors by a matcher. Only errors that match
+ *   the matcher will trigger the fallback; unmatched errors are re-thrown.
+ * - If `matcher` is omitted, all errors are caught and passed to the fallback.
  *
- * @param {Function|What} f - Fallback function or What instance to use if the primary returns `undefined`.
- * @param {string|RegExp} [errStringOrRegex] - Optional error message string or RegExp to catch and use fallback.
- *                                             If omitted, any error is re-thrown.
+ * Supported matcher types (checked via `Errors.matches`):
+ * - number → matches `statusCode` (HttpError)
+ * - string → matches class name (e.g. "HttpError", "DomError")
+ * - RegExp → tests against error message
+ * - function → custom predicate `(err) => boolean`
+ *
+ * @param {Function|What} f - Fallback function or What instance to use if the primary returns `undefined` or a matching error is thrown.
+ *                             If a matching error occurs, it is passed as the last argument to `f`.
+ * @param {string|number|RegExp|Function} [matcher] - Optional matcher to filter caught errors.
+ *                                                    If omitted, all errors are caught.
  * @returns {What} A new What instance that applies the fallback logic.
  *
  * @example
@@ -177,32 +186,26 @@ static retype(f, instance) {
  * fn(-1); // => -2  (error "negative" matched, fallback applied)
  * fn(3);  // => 6   (primary returned undefined, fallback applied)
  */
-
-else(f, errStringOrRegex = undefined) {
-    const errMsg = typeof errStringOrRegex === 'string' ? errStringOrRegex : undefined;
-    const regex = errStringOrRegex instanceof RegExp ? errStringOrRegex : undefined;
-
+else(f, matcher) {
     const got = (...args) => {
-        let result;
-        try {
-            result = this(...args);
-        } catch (err) {
-            const msg = err.message ?? JSON.stringify(err);
-            // Only swallow the error if it matches the string or regex
-            if ((errMsg && errMsg === msg) || (regex && regex.test(msg))) {
-                return f(...args, err); // fallback will execute
-            } else {
-                throw err; // rethrow unmatched errors
-            }
+      let result;
+      try {
+        result = this(...args);
+      } catch (err) {
+        // If no matcher provided, fallback catches all errors
+        if (!matcher || Errors.matches(err, matcher)) {
+          return f(...args, err);
         }
-
-        if (result === undefined) return f(...args);
-        return result;
+        throw err; // rethrow unmatched errors
+      }
+  
+      if (result === undefined) return f(...args);
+      return result;
     };
-
+  
     return What.retype(got, this);
-}
-
+  }
+  
     /**
      * Static version of `else`.
      *
