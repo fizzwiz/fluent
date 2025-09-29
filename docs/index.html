@@ -66,17 +66,17 @@
 <p>The <code>Each</code> class represents a composable, <strong>lazy iterable</strong>. It implements <code>[Symbol.iterator]()</code> and enables expressive operations for building and manipulating sequences without eager execution.</p>
 <h3>Key Highlights</h3>
 <ul>
-<li><strong>Fluent operations:</strong> <code>filter</code>, <code>map</code>, <code>reduce</code>, <code>combine</code>, <code>traverse</code>.</li>
+<li><strong>Fluent operations:</strong> like Array <code>filter</code>, <code>map</code>, <code>reduce</code> available on any Iterable.</li>
 <li><strong>Supports infinite and recursive sequences</strong> through lazy evaluation.</li>
-<li><strong>Declarative composition:</strong> <code>slice</code>, <code>zip</code>, <code>concat</code>, and compute Cartesian products.</li>
+<li><strong>Declarative composition:</strong> like <code>slice</code>, <code>zip</code>, <code>concat</code>, and compute Cartesian products.</li>
 </ul>
 <hr>
 <h2>⏳➰ <code>AsyncEach</code> Class — Asynchronous Iteration</h2>
 <p><code>AsyncEach</code> complements <code>Each</code> by providing a fluent interface for <strong>async iterables and promises</strong>. It implements <code>[Symbol.asyncIterator]()</code> and allows the same composable operations as <code>Each</code>, but asynchronously.</p>
 <h3>Key Highlights</h3>
 <ul>
-<li><strong>Async resolution:</strong> <code>.when()</code> converts iterables of promises into an <code>AsyncEach</code>.</li>
-<li><strong>Fluent async transformations:</strong> <code>sthen()</code>, <code>if()</code>, <code>else()</code>, ... work with async functions or promises.</li>
+<li><strong>Async resolution:</strong> <code>.when()</code> converts iterables of promises into an <code>AsyncEach</code> of resolved values.</li>
+<li><strong>Fluent async transformations:</strong> <code>sthen()</code>, <code>if()</code>, <code>else()</code>, etc., work with async functions or promises.</li>
 <li><strong>Seamless integration:</strong> Combine synchronous <code>Each</code> and asynchronous <code>AsyncEach</code> pipelines.</li>
 <li><strong>Lazy async evaluation:</strong> Promises are awaited only when iterated.</li>
 </ul>
@@ -87,18 +87,18 @@ const each = Each.of(
   Promise.resolve(2),
   Promise.resolve(3)
 )
-.sthen(p => p.then(n => n * 2)); 
+.sthen(p => p.then(n => n * 2));
 
-// Converting an iterable of promises into an async iterable of (non-resolved-yet) values
+// Converting an iterable of promises into an async iterable of resolved values
 const asyncEach = each.when();
 
 // Iterating the async iterable
-for await (const value of asyncEach) { 
+for await (const value of asyncEach) {
   console.log(value); // 2, 4, 6
 }
 
 // Working with values through the AsyncEach interface
-const transformed = asyncEach.sthen(n => n * 2); 
+const transformed = asyncEach.sthen(n => n * 2);
 
 // Actually generating the values
 const values = await transformed.toArray(); // [4, 8, 12]
@@ -106,7 +106,6 @@ const values = await transformed.toArray(); // [4, 8, 12]
 for (const value of values) {
   console.log(value); // 4, 8, 12
 }
-
 </code></pre>
 <hr>
 <h2>❓ <code>What</code> Class — Functional Abstraction</h2>
@@ -124,7 +123,6 @@ console.log(double.what(5) === double(5)); // true
 const conditional = double.if(x => x >= 3).else(x => x);
 console.log(conditional.what(3)); // 6
 console.log(conditional.what(2)); // 2
-
 </code></pre>
 <hr>
 <h2>⏳❓ <code>AsyncWhat</code> Class — Asynchronous Functional Abstraction</h2>
@@ -135,8 +133,7 @@ console.log(conditional.what(2)); // 2
 <li>Integrates seamlessly with <code>Each</code>, <code>AsyncEach</code>, and <code>What</code>.</li>
 </ul>
 <h3>Example</h3>
-<pre class="prettyprint source lang-js"><code>
-// A synchronous What
+<pre class="prettyprint source lang-js"><code>// A synchronous What
 const double = What.as(x => x * 2);
 
 // Create a conditional AsyncWhat using an asynchronous predicate
@@ -147,7 +144,6 @@ const conditional = double
 // Use the conditional function
 console.log(await conditional(2)); // 2
 console.log(await conditional(4)); // 8
-
 </code></pre>
 <hr>
 <h2>⚙️ Shared Semantic Across Classes</h2>
@@ -178,7 +174,7 @@ console.log(await conditional(4)); // 8
 </tr>
 <tr>
 <td><code>when()</code></td>
-<td>Async input filtering, bridges sync &amp; async</td>
+<td>Bridges sync &amp; async</td>
 </tr>
 <tr>
 <td><code>match()</code></td>
@@ -190,7 +186,7 @@ console.log(await conditional(4)); // 8
 </tr>
 <tr>
 <td><code>self()</code></td>
-<td>Infinite repetition</td>
+<td>Infinite repetition or argument/context binding</td>
 </tr>
 <tr>
 <td><code>what()</code></td>
@@ -205,7 +201,7 @@ console.log(await conditional(4)); // 8
 <ul>
 <li><strong>Lazy evaluation</strong> — computations occur only when needed.</li>
 <li><strong>Fluent composition</strong> — operations chain naturally.</li>
-<li><strong>Declarative problem solving</strong> — express complex sequences and logic as readable statements, including infinite iterations.</li>
+<li><strong>Declarative problem solving</strong> — express complex sequences and logic as readable statements, including infinite iterations and workflows distributed among several machines.</li>
 </ul>
 <hr>
 <h2>🔗 Links</h2>
@@ -231,7 +227,7 @@ console.log(await conditional(4)); // 8
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Sep 25 2025 13:42:19 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Mon Sep 29 2025 15:51:16 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -76,7 +76,10 @@ export class AsyncEach {
    * @param {*} items Input sequence or value
    * @returns {AsyncEach}
    */
+  /*
   static as(items) {
+
+
     if (items instanceof AsyncEach) return items;
 
     if (items != null && typeof items[Symbol.asyncIterator] === 'function') {
@@ -96,8 +99,32 @@ export class AsyncEach {
     }
 
     return AsyncEach.of(items);
-  }
+  } */
+  static as(items) {
+    let got;
 
+    if (items === undefined) {
+      return AsyncEach.of();
+    } else if (items instanceof AsyncEach) {
+      return items;
+    } else if (items[Symbol.iterator]) {
+      got = new AsyncEach();
+      got[Symbol.asyncIterator] = async function* () {
+        for (const x of items) yield x;
+      };
+    } else if (items[Symbol.asyncIterator]) {
+      got = new AsyncEach();
+      got[Symbol.asyncIterator] = async function* () {
+        for await (const x of items) yield x;
+      };
+    } else {
+      got = new AsyncEach();
+      got[Symbol.asyncIterator] = async function* () {
+        yield await items;
+      };      
+    }
+    return got;
+  }
   /**
    * Collects this `AsyncEach` into an array of resolved values.
    * @returns {Promise<Array<*>>} Resolves to an array

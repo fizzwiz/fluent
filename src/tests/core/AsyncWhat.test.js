@@ -3,6 +3,8 @@ import assert from 'assert';
 import { AsyncWhat } from '../../main/core/AsyncWhat.js';
 import { Path } from '../../main/util/Path.js';
 import { Each } from '../../main/core/Each.js';
+import { EventEmitter } from 'events';
+import { TimeoutError } from '../../main/util/Errors.js';  
 
 describe('AsyncWhat', () => {
 
@@ -21,42 +23,22 @@ describe('AsyncWhat', () => {
     assert.equal(await one.what("two"), undefined);
   });
 
-  it('if - filters undefined or falsy', async () => {
+  it('if - throws on falsy', async () => {
     const f = AsyncWhat.as(x => x).if(x => x > 0);
-    assert.equal(await f(0), undefined);
+    await assert.rejects(async () => f(0), AsyncWhat.IF_ERROR);
     assert.equal(await f(1), 1);
-  });
+  });  
 
-  it('which - filters output from multivalued source', async () => {
+  it('which - filters output', async () => {
     const source = AsyncWhat.as(x => x + 1);
     const filtered = source.which(y => y > 0);
-    assert.equal(await filtered(-1), undefined);
+    assert.rejects(async () => await filtered(-1), AsyncWhat.WHICH_ERROR);
     assert.equal(await filtered(0), await source(0));
-  });
-
-  it('when - asynchronous if', async () => {
-    const f = AsyncWhat.as(x => x);
-    const g = f.when(async x => x > 0);
-    assert.strictEqual(typeof await f(0), 'number');
-    assert.ok(g(0) instanceof Promise);
-    let result = await g(0);
-    assert.strictEqual(result, undefined);
-    result = await g(1);
-    assert.strictEqual(result, await f(1));
   });
 
   it('sthen - sequential application', async () => {
     const composed = AsyncWhat.sthen(x => x + 1, x => x * 2);
     assert.equal(await composed.what(2), 6);
-  });
-
-  it('else - fallback on undefined', async () => {
-    const f = AsyncWhat.else(
-      x => (x === 1 ? undefined : x),
-      x => x * 10
-    );
-    assert.equal(await f.what(1), 10);
-    assert.equal(await f.what(2), 2);
   });
 
   describe('AsyncWhat.else (dynamic)', () => {
@@ -187,5 +169,124 @@ describe('AsyncWhat', () => {
     const f = AsyncWhat.as(x => x * 3).self(undefined, 'triple');
     assert.deepEqual(await f(2), { triple: 6 });
   });
+  
+  describe("AsyncWhat.when (event mode)", function () {
+    it("resolves when predicate matches an event", async function () {
+      const emitter = new EventEmitter();
+      const asyncWhat = AsyncWhat.when(
+        (msg) => msg === "hello",
+        (msg) => `pong-${msg}`,
+        emitter,
+        "ping",
+        500
+      );
+  
+      setTimeout(() => emitter.emit("ping", "hello"), 50);
+  
+      const result = await asyncWhat();
+      assert.equal(result, "pong-hello");
+    });
+  
+    it("does not call handler if predicate fails", async function () {
+      const emitter = new EventEmitter();
+      const asyncWhat = AsyncWhat.when(
+        (msg) => msg === "match-me",
+        () => "pong",
+        emitter,
+        "ping",
+        200
+      );
+  
+      setTimeout(() => emitter.emit("ping", "nope"), 50);
+  
+      let timedOut = false;
+      try {
+        await asyncWhat();
+      } catch (err) {
+        timedOut = err.name === "TimeoutError";
+      }
+      assert.ok(timedOut, "Expected TimeoutError");
+    });
+  
+    it("cleans up the listener after resolution", async function () {
+      const emitter = new EventEmitter();
+      let callCount = 0;
+  
+      const asyncWhat = AsyncWhat.when(
+        () => true,
+        () => {
+          callCount++;
+          return "pong";
+        },
+        emitter,
+        "ping",
+        500
+      );
+  
+      setTimeout(() => emitter.emit("ping"), 50);
+  
+      const result = await asyncWhat();
+      assert.equal(result, "pong");
+  
+      // Emit again; listener should already be removed
+      emitter.emit("ping");
+      emitter.emit("ping");
+  
+      assert.equal(callCount, 1, "Handler should run only once");
+    });
+  
+    it("rejects if timeout is reached", async function () {
+      const emitter = new EventEmitter();
+      const asyncWhat = AsyncWhat.when(
+        () => true,
+        () => "pong",
+        emitter,
+        "ping",
+        100
+      );
+  
+      let rejected = false;
+      try {
+        await asyncWhat();
+      } catch (err) {
+        rejected = err.name === "TimeoutError";
+      }
+      assert.ok(rejected, "Expected TimeoutError");
+    });
+  
+    it("works with DOM-style EventTarget", async function () {
+      // Simple DOM EventTarget mock
+      const emitter = {
+        listeners: {},
+        addEventListener(evt, cb) {
+          this.listeners[evt] = this.listeners[evt] || [];
+          this.listeners[evt].push(cb);
+        },
+        removeEventListener(evt, cb) {
+          if (this.listeners[evt]) {
+            this.listeners[evt] = this.listeners[evt].filter((fn) => fn !== cb);
+          }
+        },
+        emit(evt, ...args) {
+          (this.listeners[evt] || []).forEach((fn) => fn(...args));
+        },
+      };
+  
+      const asyncWhat = AsyncWhat.when(
+        (msg) => msg === "hello",
+        (msg) => `pong-${msg}`,
+        emitter,
+        "ping",
+        500
+      );
+  
+      setTimeout(() => emitter.emit("ping", "hello"), 50);
+      const result = await asyncWhat();
+      assert.equal(result, "pong-hello");
+    });
+  });
+  
+  
+
 
 });

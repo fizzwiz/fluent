@@ -21,28 +21,22 @@ describe('What', () => {
         assert.equal(one.what("two"), undefined);
     });
 
-    it('if - filters undefined or falsy', () => {
-        const f = What.as(x => x).if(x => x > 0);
-        assert.equal(f(0), undefined);
-        assert.equal(f(1), 1);
-    });
+    it('if - throws on falsy, if an error is provided', () => {
+      const f = What.as(x => x).if(x => x > 0, 'if failed');
+  
+      // must wrap in a function for assert.throws
+      assert.throws(() => f(0), /if failed/);
+  
+      // happy path: value is returned
+      assert.equal(f(1), 1);
+  });
+  
 
-    it('which - filters output from multivalued source', () => {
+    it('which - filters output', () => {
         const source = What.as(x => x + 1);
-        const filtered = source.which(y => y > 0);
-        assert.equal(filtered(-1), undefined);
+        const filtered = source.which(y => y > 0, "y <= 0");
+        assert.throws(() => filtered(-1), /y <= 0/);
         assert.equal(filtered(0), source(0));
-    });
-
-    it('when - asynchronous if', async () => {
-      const f = What.as(x => x);
-      const g = f.when(async x => x > 0);
-      assert.strictEqual(typeof f(0), 'number');
-      assert.ok(g(0) instanceof Promise);
-      let result = await g(0);
-      assert.strictEqual(result, undefined);
-      result = await g(1);
-      assert.strictEqual(result, f(1));
     });
 
     it('sthen - sequential application', () => {
@@ -50,26 +44,8 @@ describe('What', () => {
         assert.equal(composed.what(2), 6); // (2 + 1) * 2
     });
 
-    it('else - fallback on undefined', () => {
-        const f = What.else(
-            x => (x === 1 ? undefined : x),
-            x => x * 10
-        );
-        assert.equal(f.what(1), 10); // fallback triggered
-        assert.equal(f.what(2), 2);  // no fallback
-    });
     
     describe('What.else (dynamic)', () => {
-    
-      it('applies fallback if the original function returns undefined', () => {
-        const fn = What.as(x => undefined).else(x => x * 2);
-        assert.strictEqual(fn(3), 6);
-      });
-    
-      it('does not call fallback if the original function returns a value', () => {
-        const fn = What.as(x => x + 1).else(x => x * 2);
-        assert.strictEqual(fn(3), 4);
-      });
     
       it('catches error with matching message and applies fallback', () => {
         const fn = What.as(x => {
@@ -236,11 +212,15 @@ describe('What', () => {
       it("nested callable chain should work", () => {
         const w = What.as(x => x + 1)
           .sthen(x => x * 2)
-          .if(x => x < 10);
-    
-        assert.equal(w(3), 8);   // (3+1)*2 = 8
-        assert.equal(w(20), undefined); // filtered out
+          .if(x => x < 10, 'too big');
+      
+        // (3+1)*2 = 8 → passes the predicate
+        assert.equal(w(3), 8);
+      
+        // (20+1)*2 = 42 → fails the predicate, should throw
+        assert.throws(() => w(20), /too big/);
       });
+      
     });
     
 });

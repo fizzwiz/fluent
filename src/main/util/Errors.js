@@ -4,42 +4,48 @@
 export class Errors {
 
   /**
-   * Check if an error matches a condition.
-   *
-   * Supported matchers:
-   * - number → matches statusCode 
-   * - string → matches class name (e.g. "HttpError", "DomError")
-   * - RegExp → tests against error message
-   * - function → custom predicate `(err) => boolean`
-   *
-   * @param {Error} err - The error instance to test
-   * @param {string|number|RegExp|Function} matcher
-   * @returns {boolean}
+   * Check whether a thrown value or Error matches a specified condition.
+   * 
+   * Supports:
+   * - Functions: `matcher(err)` returns boolean
+   * - Primitives: equality check (`===`)
+   * - Error instances: matches constructor name, statusCode, or message
+   * - Strings: can be matched by a RegExp
+   * 
+   * @param {*} err - The thrown value (can be primitive, string, or Error)
+   * @param {string|number|RegExp|Function} matcher - Matching condition
+   * @returns {boolean} True if `err` matches `matcher`, false otherwise
    */
   static matches(err, matcher) {
     
-    if (err == null) return false;
-
-    switch (typeof matcher) {
-      case "number":
-        return err.statusCode === matcher;
-
-      case "string":
-        return err.constructor?.name === matcher;
-
-      case "function":
-        return matcher(err);
-
-      case "object":
-        if (matcher instanceof RegExp) {
-          return matcher.test(err.message);
-        }
-        return false;
-
-      default:
-        return false;
+    if (typeof matcher === 'function') {
+      try {
+          return matcher(err);
+      } catch (_err) {
+          return false; // matcher threw an exception, treat as no match
+      }
     }
+
+    if (err == null) return false;    
+    if (err === matcher) return true;
+
+    if (err instanceof Error) {
+      return this.matches(err.constructor.name, matcher) ||
+            this.matches(err.statusCode, matcher) ||
+            this.matches(err.message, matcher);
+    }
+
+    if (typeof err === 'string') {
+      if (typeof matcher === 'string') 
+          return err.includes(matcher);
+      else if (matcher instanceof RegExp) {
+        return matcher.test(err);
+      }
+    }
+
+    return false;
   }
+
 }
 
 /**
