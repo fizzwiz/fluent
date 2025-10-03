@@ -764,165 +764,6 @@ If the predicate returns false, returns undefined by default. Optionally, an err
     
 
     
-    <h4 class="name" id="let"><span class="type-signature">(abstract) </span>let<span class="signature">(arg, value)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Bind a value to a key or keys.
-Must be implemented by subclass or instance.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>arg</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-|
-
-<span class="param-type">Array.&lt;*></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Key or keys</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>value</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Value to assign</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
     <h4 class="name" id="match"><span class="type-signature"></span>match<span class="signature">(&hellip;ff)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
     
 
@@ -1088,7 +929,7 @@ Must be implemented by subclass or instance.</p>
     
 
     
-    <h4 class="name" id="self"><span class="type-signature"></span>self<span class="signature">(&hellip;args)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
+    <h4 class="name" id="self"><span class="type-signature"></span>self<span class="signature">(arg0<span class="signature-attributes">opt</span>, arg1<span class="signature-attributes">opt</span>, baseDelay<span class="signature-attributes">opt</span>, factor<span class="signature-attributes">opt</span>, maxDelay<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>|<a href="What.html">What</a>}</span></h4>
     
 
     
@@ -1096,26 +937,48 @@ Must be implemented by subclass or instance.</p>
 
 
 <div class="description">
-    <p>Adapts this <code>What</code> instance for argument binding or context property mapping.</p>
-<p>Overloads:</p>
+    <p>Dynamically adapts this What instance for different use cases depending on the arguments.</p>
+<p>The behavior depends on the arguments passed, supporting multiple <strong>overload modes</strong>:</p>
 <ol>
 <li>
-<p>No arguments → path-expanding mode.</p>
+<p><strong>Path-expanding mode</strong> (no arguments):</p>
 <ul>
-<li>Returns a function that applies <code>f</code> to the last element of a Path and expands results.</li>
+<li><code>self()</code></li>
+<li>Converts this What: <code>item -&gt; items</code> to a What: <code>path -&gt; paths</code>
+by expanding <code>path.last</code> through the original function.</li>
 </ul>
 </li>
 <li>
-<p>Context-mapping / nominal mode (string or string[]):</p>
+<p><strong>Context-mapping / nominal mode</strong> (string or string[] as first argument):</p>
 <ul>
-<li><code>self(name)</code> → extracts <code>ctx[name]</code> as input.</li>
-<li><code>self(names, nameOut)</code> → extracts multiple properties and optionally stores result in <code>ctx[nameOut]</code>.</li>
+<li><code>self(name)</code> → extracts <code>ctx[name]</code> and passes it as input.</li>
+<li><code>self(nameIn, nameOut)</code> → maps <code>ctx[nameIn]</code> to input and stores result in <code>ctx[nameOut]</code>.</li>
+<li><code>self([name1, name2, ...])</code> → extracts multiple properties from context.</li>
+<li><code>self([name1, name2, ...], nameOut)</code> → stores result in <code>ctx[nameOut]</code>.</li>
 </ul>
 </li>
 <li>
-<p>Argument-binding mode (number + value):</p>
+<p><strong>Argument-binding mode</strong> (two numeric arguments):</p>
 <ul>
-<li><code>self(index, value)</code> → injects <code>value</code> at position <code>index</code> in argument list.</li>
+<li><code>self(index, value)</code></li>
+<li>Injects <code>value</code> into the argument list at position <code>index</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Timeout mode</strong> (single numeric argument):</p>
+<ul>
+<li><code>self(timeoutMs)</code></li>
+<li>Promotes this What to an <code>AsyncWhat</code> that rejects if the computation does not complete
+within <code>timeoutMs</code> milliseconds.</li>
+</ul>
+</li>
+<li>
+<p><strong>Retry mode</strong> (numeric first argument with ≥3 args):</p>
+<ul>
+<li><code>self(nAttempts, baseDelay, factor, maxDelay)</code></li>
+<li>Promotes this What to an <code>AsyncWhat</code> that retries execution up to <code>nAttempts</code> with
+exponential backoff. The resulting <code>AsyncWhat</code> exposes a <code>.stopped</code> property to
+cancel the retries.</li>
 </ul>
 </li>
 </ol>
@@ -1146,6 +1009,8 @@ Must be implemented by subclass or instance.</p>
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -1156,13 +1021,19 @@ Must be implemented by subclass or instance.</p>
 
         <tr>
             
-                <td class="name"><code>args</code></td>
+                <td class="name"><code>arg0</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">*</span>
+<span class="param-type">number</span>
+|
+
+<span class="param-type">string</span>
+|
+
+<span class="param-type">Array.&lt;string></span>
 
 
             
@@ -1171,18 +1042,180 @@ Must be implemented by subclass or instance.</p>
             
                 <td class="attributes">
                 
-
+                    &lt;optional><br>
                 
 
                 
-                    &lt;repeatable><br>
+
                 
                 </td>
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last"><p>Overload-dependent arguments</p></td>
+            <td class="description last"><p>Numeric index, retry attempts, timeout in ms, or property name(s)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>arg1</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Value to inject (argument-binding), output property name (nominal mode),
+or retry attempts (retry mode)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>baseDelay</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    100
+                
+                </td>
+            
+
+            <td class="description last"><p>Base delay in ms for retry mode</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>factor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    1
+                
+                </td>
+            
+
+            <td class="description last"><p>Exponential backoff factor for retry mode</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxDelay</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    Infinity
+                
+                </td>
+            
+
+            <td class="description last"><p>Maximum delay for retry mode</p></td>
         </tr>
 
     
@@ -1247,7 +1280,9 @@ Must be implemented by subclass or instance.</p>
 
         
 <div class="param-desc">
-    <p>Wrapped What instance</p>
+    <p>A new instance wrapping the adapted behavior:
+- <code>What</code> for path-expanding, context-mapping, argument-binding
+- <code>AsyncWhat</code> for timeout or retry mode</p>
 </div>
 
 
@@ -1258,6 +1293,9 @@ Must be implemented by subclass or instance.</p>
     </dt>
     <dd>
         
+<span class="param-type"><a href="AsyncWhat.html">AsyncWhat</a></span>
+|
+
 <span class="param-type"><a href="What.html">What</a></span>
 
 
@@ -1438,174 +1476,7 @@ Must be implemented by subclass or instance.</p>
     
 
     
-    <h4 class="name" id="what"><span class="type-signature">(abstract) </span>what<span class="signature">(&hellip;args)</span><span class="type-signature"> &rarr; {*}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Evaluate the function with given arguments.
-Must be implemented by subclass or instance.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Input arguments</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>Result of evaluation</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">*</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="when"><span class="type-signature"></span>when<span class="signature">(predicate, emitter, event, timeoutMs<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
+    <h4 class="name" id="when"><span class="type-signature"></span>when<span class="signature">(predicate, emitter, event, timeoutMs<span class="signature-attributes">opt</span>, start<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
     
 
     
@@ -1614,16 +1485,36 @@ Must be implemented by subclass or instance.</p>
 
 <div class="description">
     <p>Asynchronous conditional in event-driven mode.</p>
-<p>Promotes this synchronous What into an AsyncWhat that executes only when
-a given event occurs on the specified emitter and the predicate applied
-to the event arguments evaluates to truthy.</p>
-<p>Example:
-What.as(doSomething).when(
-evt =&gt; evt.type === 'message',
-socket,
-'message',
-5000
+<p>Promotes the current What (<code>this</code>) into an AsyncWhat that wraps the underlying logic
+and executes conditionally based on the occurrence of a specified event and a predicate.</p>
+<p>Behavior:</p>
+<ul>
+<li><code>start = true</code>: the underlying AsyncWhat is executed <strong>only when</strong> the predicate evaluates
+truthy upon the event.</li>
+<li><code>start = false</code>: the underlying AsyncWhat is <strong>immediately invoked</strong> (so it can run and
+be stopped), and will be stopped when the predicate evaluates truthy upon the event.</li>
+</ul>
+<p>If no matching event occurs within <code>timeoutMs</code>, the returned AsyncWhat rejects with a <code>TimeoutError</code>.</p>
+<p>The returned AsyncWhat proxies the <code>.stopped</code> property of the underlying AsyncWhat,
+allowing external control over cyclic or self-driven executions.</p>
+<p>Example: infinite cyclic execution with start/stop triggers</p>
+<p>const cyclic = doSomething.self(Infinity, 100, 1);</p>
+<p>const bounded = cyclic
+.when(
+isStart,      // predicate identifying start condition
+emitter,      // event source
+event,        // event name to listen for
+undefined,    // optional timeout
+true          // start cyclic execution when event occurs
+)
+.when(
+isStop,       // predicate identifying stop condition
+emitter,
+event,
+undefined,
+false         // stop cyclic execution when event occurs
 );</p>
+<p>bounded();</p>
 </div>
 
 
@@ -1650,6 +1541,8 @@ socket,
         <th>Attributes</th>
         
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -1684,8 +1577,12 @@ socket,
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last"><p>Predicate <code>(…eventArgs) =&gt; boolean</code></p></td>
+            <td class="description last"><p>Predicate <code>(…eventArgs, emitter) =&gt; boolean | Promise&lt;boolean)</code> to evaluate event arguments</p></td>
         </tr>
 
     
@@ -1718,6 +1615,10 @@ socket,
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last"><p>Event source</p></td>
         </tr>
@@ -1748,6 +1649,10 @@ socket,
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last"><p>Event name to listen for</p></td>
@@ -1782,8 +1687,52 @@ socket,
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last"><p>Timeout in ms</p></td>
+            <td class="description last"><p>Optional timeout in milliseconds</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>start</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last"><p>If <code>true</code>, executes the underlying AsyncWhat when predicate matches;
+if <code>false</code>, immediately invokes the underlying AsyncWhat and stops it when predicate matches</p></td>
         </tr>
 
     
@@ -1842,13 +1791,43 @@ socket,
 
 
 
+<h5>Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        <p>If no matching event occurs within the specified timeout</p>
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type"><a href="TimeoutError.html">TimeoutError</a></span>
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
 
 
 <h5>Returns:</h5>
 
         
 <div class="param-desc">
-    <p>A new asynchronous What</p>
+    <p>An AsyncWhat that resolves with the result of the underlying function (if starting)
+or <code>undefined</code> (if stopping)</p>
 </div>
 
 
@@ -2409,7 +2388,7 @@ If the predicate returns false, returns <code>undefined</code> by default. Optio
     
 
     
-    <h4 class="name" id=".of"><span class="type-signature">(static) </span>of<span class="signature">(args, value)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
+    <h4 class="name" id=".of"><span class="type-signature">(static) </span>of<span class="signature">(&hellip;items)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
     
 
     
@@ -2417,7 +2396,19 @@ If the predicate returns false, returns <code>undefined</code> by default. Optio
 
 
 <div class="description">
-    <p>Create a <code>What</code> that matches exact argument arrays.</p>
+    <p>Creates a <code>What</code> instance that returns a fixed value when called
+with an exact sequence of arguments.</p>
+<p>Essentially defines a single mapping:</p>
+<p>(arg1, arg2, ..., argN) → value</p>
+<p>If the input arguments exactly match the defined sequence (deep
+equality check via <code>Each.equal</code>), the stored value is returned;
+otherwise <code>undefined</code>.</p>
+<h3>Example</h3>
+<pre class="prettyprint source lang-js"><code>const f = What.of(1, 2, &quot;answer&quot;);
+console.log(f(1, 2));    // &quot;answer&quot;
+console.log(f(1));       // undefined
+console.log(f(2, 1));    // undefined
+</code></pre>
 </div>
 
 
@@ -2441,6 +2432,8 @@ If the predicate returns false, returns <code>undefined</code> by default. Optio
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -2453,33 +2446,7 @@ If the predicate returns false, returns <code>undefined</code> by default. Optio
 
         <tr>
             
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-|
-
-<span class="param-type">Array.&lt;*></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Expected argument(s)</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>value</code></td>
+                <td class="name"><code>items</code></td>
             
 
             <td class="type">
@@ -2492,10 +2459,22 @@ If the predicate returns false, returns <code>undefined</code> by default. Optio
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>Value to return if arguments match</p></td>
+            <td class="description last"><p>Argument sequence followed by the return value.
+The last element in <code>items</code> is treated as the value, while the
+preceding elements are the argument pattern to match.</p></td>
         </tr>
 
     
@@ -2559,6 +2538,10 @@ If the predicate returns false, returns <code>undefined</code> by default. Optio
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <p>A <code>What</code> instance mapping the specified arguments to the given value.</p>
+</div>
+
 
 
 <dl>
@@ -2774,7 +2757,7 @@ If the predicate returns false, returns <code>undefined</code> by default. Optio
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Mon Sep 29 2025 15:51:16 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri Oct 03 2025 12:42:38 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

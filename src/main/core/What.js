@@ -27,48 +27,39 @@ import { Errors, TimeoutError } from "../util/Errors.js";
 export class What {
 
     // ----------------------
-    // Abstract instance methods
-    // ----------------------
-
-    /**
-     * Evaluate the function with given arguments.
-     * Must be implemented by subclass or instance.
-     *
-     * @abstract
-     * @param {...*} args Input arguments
-     * @returns {*} Result of evaluation
-     */
-    what(...args) {
-        throw new Error('Abstract method what() must be implemented in subclasses!');
-    }
-
-    /**
-     * Bind a value to a key or keys.
-     * Must be implemented by subclass or instance.
-     *
-     * @abstract
-     * @param {*|Array<*>} arg Key or keys
-     * @param {*} value Value to assign
-     */
-    let(arg, value) {
-        throw new Error('Abstract method let() must be implemented!');
-    }
-
-    // ----------------------
     // Construction
     // ----------------------
 
     /**
-     * Create a `What` that matches exact argument arrays.
+     * Creates a `What` instance that returns a fixed value when called
+     * with an exact sequence of arguments.
      *
-     * @param {*|Array<*>} args Expected argument(s)
-     * @param {*} value Value to return if arguments match
-     * @returns {What}
+     * Essentially defines a single mapping:
+     *
+     *   (arg1, arg2, ..., argN) → value
+     *
+     * If the input arguments exactly match the defined sequence (deep
+     * equality check via `Each.equal`), the stored value is returned;
+     * otherwise `undefined`.
+     *
+     * ### Example
+     * ```js
+     * const f = What.of(1, 2, "answer");
+     * console.log(f(1, 2));    // "answer"
+     * console.log(f(1));       // undefined
+     * console.log(f(2, 1));    // undefined
+     * ```
+     *
+     * @param {...*} items - Argument sequence followed by the return value.
+     *   The last element in `items` is treated as the value, while the
+     *   preceding elements are the argument pattern to match.
+     * @returns {What} A `What` instance mapping the specified arguments to the given value.
      */
-    static of(args, value) {
-        if (!Array.isArray(args)) args = [args];
+    static of(...items) {
+        const args = items.slice(0, -1);
+        const value = items.at(-1);
         return What.as((...aa) => Each.equal(args, aa) ? value : undefined);
-    }
+    }  
 
     /**
      * Wrap a value, function, or What instance as a `What`.
@@ -84,7 +75,7 @@ export class What {
         }
         const got = (...args) => f(...args);
         Object.setPrototypeOf(got, What.prototype);
-        got.what = f;
+        got.what = f.bind(got);
         return got;
     }
 
@@ -254,30 +245,58 @@ static which(f, p = item => item !== undefined, error = undefined) {
     });
 }
 
-    /**
-     * Asynchronous conditional in event-driven mode.
-     *
-     * Promotes this synchronous What into an AsyncWhat that executes only when
-     * a given event occurs on the specified emitter and the predicate applied
-     * to the event arguments evaluates to truthy.
-     *
-     * Example:
-     *   What.as(doSomething).when(
-     *     evt => evt.type === 'message',
-     *     socket,
-     *     'message',
-     *     5000
-     *   );
-     *
-     * @param {Function} predicate - Predicate `(…eventArgs) => boolean`
-     * @param {EventEmitter|EventTarget} emitter - Event source
-     * @param {string} event - Event name to listen for
-     * @param {number} [timeoutMs] - Timeout in ms
-     * @returns {AsyncWhat} A new asynchronous What
-     */
-    when(predicate, emitter, event, timeoutMs = undefined) {
-        return AsyncWhat.when(predicate, this, emitter, event, timeoutMs);
-    }  
+/**
+ * Asynchronous conditional in event-driven mode.
+ *
+ * Promotes the current What (`this`) into an AsyncWhat that wraps the underlying logic
+ * and executes conditionally based on the occurrence of a specified event and a predicate.
+ *
+ * Behavior:
+ * - `start = true`: the underlying AsyncWhat is executed **only when** the predicate evaluates
+ *   truthy upon the event.
+ * - `start = false`: the underlying AsyncWhat is **immediately invoked** (so it can run and
+ *   be stopped), and will be stopped when the predicate evaluates truthy upon the event.
+ *
+ * If no matching event occurs within `timeoutMs`, the returned AsyncWhat rejects with a `TimeoutError`.
+ *
+ * The returned AsyncWhat proxies the `.stopped` property of the underlying AsyncWhat,
+ * allowing external control over cyclic or self-driven executions.
+ *
+ * Example: infinite cyclic execution with start/stop triggers
+ * 
+ *   const cyclic = doSomething.self(Infinity, 100, 1);
+ * 
+ *   const bounded = cyclic
+ *     .when(
+ *       isStart,      // predicate identifying start condition
+ *       emitter,      // event source
+ *       event,        // event name to listen for
+ *       undefined,    // optional timeout
+ *       true          // start cyclic execution when event occurs
+ *     )
+ *     .when(
+ *       isStop,       // predicate identifying stop condition
+ *       emitter,
+ *       event,
+ *       undefined,
+ *       false         // stop cyclic execution when event occurs
+ *     );
+ * 
+ *   bounded();   
+ *
+ * @param {Function} predicate - Predicate `(…eventArgs, emitter) => boolean | Promise<boolean)` to evaluate event arguments
+ * @param {EventEmitter|EventTarget} emitter - Event source
+ * @param {string} event - Event name to listen for
+ * @param {number} [timeoutMs] - Optional timeout in milliseconds
+ * @param {boolean} [start=true] - If `true`, executes the underlying AsyncWhat when predicate matches;
+ *                                 if `false`, immediately invokes the underlying AsyncWhat and stops it when predicate matches
+ * @returns {AsyncWhat} An AsyncWhat that resolves with the result of the underlying function (if starting)
+ *                      or `undefined` (if stopping)
+ * @throws {TimeoutError} If no matching event occurs within the specified timeout
+ */
+when(predicate, emitter, event, timeoutMs = undefined, start = true) {
+    return AsyncWhat.when(predicate, this, emitter, event, timeoutMs, start);
+}
 
     /**
      * Zip multiple What instances.
@@ -343,22 +362,45 @@ static each(...ff) {
 }
 
 /**
- * Adapts this `What` instance for argument binding or context property mapping.
- * 
- * Overloads:
- * 
- * 1. No arguments → path-expanding mode.
- *    - Returns a function that applies `f` to the last element of a Path and expands results.
- * 
- * 2. Context-mapping / nominal mode (string or string[]):
- *    - `self(name)` → extracts `ctx[name]` as input.
- *    - `self(names, nameOut)` → extracts multiple properties and optionally stores result in `ctx[nameOut]`.
- * 
- * 3. Argument-binding mode (number + value):
- *    - `self(index, value)` → injects `value` at position `index` in argument list.
+ * Dynamically adapts this What instance for different use cases depending on the arguments.
  *
- * @param {...*} args Overload-dependent arguments
- * @returns {What} Wrapped What instance
+ * The behavior depends on the arguments passed, supporting multiple **overload modes**:
+ *
+ * 1. **Path-expanding mode** (no arguments):
+ *    - `self()`
+ *    - Converts this What: `item -> items` to a What: `path -> paths`
+ *      by expanding `path.last` through the original function.
+ *
+ * 2. **Context-mapping / nominal mode** (string or string[] as first argument):
+ *    - `self(name)` → extracts `ctx[name]` and passes it as input.  
+ *    - `self(nameIn, nameOut)` → maps `ctx[nameIn]` to input and stores result in `ctx[nameOut]`.  
+ *    - `self([name1, name2, ...])` → extracts multiple properties from context.  
+ *    - `self([name1, name2, ...], nameOut)` → stores result in `ctx[nameOut]`.
+ *
+ * 3. **Argument-binding mode** (two numeric arguments):
+ *    - `self(index, value)`
+ *    - Injects `value` into the argument list at position `index`.
+ *
+ * 4. **Timeout mode** (single numeric argument):
+ *    - `self(timeoutMs)`
+ *    - Promotes this What to an `AsyncWhat` that rejects if the computation does not complete
+ *      within `timeoutMs` milliseconds.
+ *
+ * 5. **Retry mode** (numeric first argument with ≥3 args):
+ *    - `self(nAttempts, baseDelay, factor, maxDelay)`
+ *    - Promotes this What to an `AsyncWhat` that retries execution up to `nAttempts` with
+ *      exponential backoff. The resulting `AsyncWhat` exposes a `.stopped` property to
+ *      cancel the retries.
+ *
+ * @param {number|string|string[]} [arg0] - Numeric index, retry attempts, timeout in ms, or property name(s)
+ * @param {number|string} [arg1] - Value to inject (argument-binding), output property name (nominal mode),
+ *                                  or retry attempts (retry mode)
+ * @param {number} [baseDelay=100] - Base delay in ms for retry mode
+ * @param {number} [factor=1] - Exponential backoff factor for retry mode
+ * @param {number} [maxDelay=Infinity] - Maximum delay for retry mode
+ * @returns {AsyncWhat|What} A new instance wrapping the adapted behavior:
+ *                            - `What` for path-expanding, context-mapping, argument-binding
+ *                            - `AsyncWhat` for timeout or retry mode
  */
 self(...args) {
     return What.retype(What.self(this, ...args), this);
@@ -387,9 +429,10 @@ static self(f, ...args) {
         // Argument-binding mode
         const [index, value] = args;
         return What.partial(f, index, value);
+    } else {
+        // Both timeout or Retry mode produce an AsyncWhat
+        return AsyncWhat.self(f, ...args);
     }
-
-    throw new Error('Unexpected arguments in What.self()');
 }
 
 /**
@@ -459,5 +502,6 @@ static nominal(f, names, name) {
 
     return What.as(got);
 }
+
 
 }

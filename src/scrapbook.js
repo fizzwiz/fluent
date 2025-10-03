@@ -4,10 +4,6 @@ import { AsyncWhat } from "./main/core/AsyncWhat.js";
 import { Path } from "./main/util/Path.js";
 import assert from "assert";
 import { Each } from "./main/core/Each.js";
+import { EventEmitter } from "events";
 
 
-const obj = {val: 5};
-    const args = await AsyncEach.of('val')
-    .toArray();
-
-console.log(args);

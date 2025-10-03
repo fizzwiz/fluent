@@ -169,6 +169,105 @@ describe('AsyncWhat', () => {
     const f = AsyncWhat.as(x => x * 3).self(undefined, 'triple');
     assert.deepEqual(await f(2), { triple: 6 });
   });
+
+describe("AsyncWhat.self() overloads", function () {
+
+  describe("timeout mode", () => {
+    it("resolves if function finishes before timeout", async () => {
+      const f = AsyncWhat.as(async () => {
+        await new Promise(res => setTimeout(res, 50));
+        return "ok";
+      });
+
+      const withTimeout = f.self(100); // timeout = 100ms
+      const result = await withTimeout();
+      assert.strictEqual(result, "ok");
+    });
+
+    it("rejects if function exceeds timeout", async () => {
+      const f = AsyncWhat.as(async () => {
+        await new Promise(res => setTimeout(res, 200));
+        return "slow";
+      });
+
+      const withTimeout = f.self(100); // timeout = 100ms
+      let error;
+      try {
+        await withTimeout();
+      } catch (err) {
+        error = err;
+      }
+      assert.ok(error, "Expected rejection due to timeout");
+      assert.match(error.message, /timed out/i);
+    });
+  });
+
+  describe("retry mode", () => {
+    it("retries until success", async () => {
+      let attempts = 0;
+      const f = AsyncWhat.as(async () => {
+        attempts++;
+        if (attempts < 3) throw new Error("fail");
+        return "success";
+      });
+
+      const retried = f.self(5, 10, 1); // up to 5 tries, delay=10ms
+      const result = await retried();
+      assert.strictEqual(result, "success");
+      assert.strictEqual(attempts, 3);
+    });
+
+    it("rejects after max attempts", async () => {
+      let attempts = 0;
+      const f = AsyncWhat.as(async () => {
+        attempts++;
+        throw new Error("always fails");
+      });
+
+      const retried = f.self(3, 10, 1); // 3 attempts max
+      let error;
+      try {
+        await retried();
+      } catch (err) {
+        error = err;
+      }
+      assert.ok(error, "Expected rejection after max attempts");
+      assert.strictEqual(attempts, 3);
+      assert.match(error.message, /always fails/);
+    });
+
+    it("stops retries when stopped flag is set", async () => {
+      this.timeout(5000); // give enough time
+
+      let attempts = 0;
+      const f = AsyncWhat.as(async () => {
+        attempts++;
+        throw new Error("fail");
+      });
+
+      const retried = f.self(Infinity, 1, 1); // infinite retries
+      const promise = retried();
+
+
+      // Stop after ~20ms
+      setTimeout(() => {
+        retried.stopped = true;
+      }, 20);
+
+      let error;
+      try {
+        await promise;
+      } catch (err) {
+        error = err;
+      }
+
+      assert.ok(error, "Expected rejection due to manual stop");
+      assert.match(error.message, /stopped/i);
+      assert.ok(attempts >= 1);
+    });
+  });
+});
+
   
   describe("AsyncWhat.when (event mode)", function () {
     it("resolves when predicate matches an event", async function () {
@@ -284,6 +383,60 @@ describe('AsyncWhat', () => {
       const result = await asyncWhat();
       assert.equal(result, "pong-hello");
     });
+
+  it('starts and stops a cyclic AsyncWhat based on events', async () => {
+    const emitter = new EventEmitter();
+    let counter = 0;
+
+    // Define a cyclic AsyncWhat
+    const cyclic = AsyncWhat.as(async () => {
+      counter++;
+      return counter;
+    }).self(Infinity, 10, 1); // infinite retries every 10ms
+
+    // Add start/stop triggers
+    const bounded = cyclic
+.when(
+        evt => evt.type === 'startEvent',
+        emitter,
+        'start',
+        500,
+        true // start cyclic
+      )    .when(
+      evt => evt.type === 'stopEvent',
+      emitter,
+      'stop',
+      500,
+      false // stop cyclic
+    );
+
+
+    // Launch the bounded AsyncWhat
+    const promise = bounded();
+
+    // Fire start event
+    emitter.emit('start', { type: 'startEvent' });
+
+    // Wait a short time to allow some cycles
+    await new Promise(res => setTimeout(res, 50));
+
+    assert.ok(counter > 0, 'Expected counter to increment after start');
+
+    // Fire stop event
+    emitter.emit('stop', { type: 'stopEvent' });
+
+    // Wait a bit to ensure cycles stop
+    await new Promise(res => setTimeout(res, 50));
+
+    const finalCount = counter;
+    
+    // Wait more to check counter does not increase
+    await new Promise(res => setTimeout(res, 50));
+    assert.strictEqual(counter, finalCount, 'Counter should not increment after stop');
+
+  });
+
+
   });
   
   

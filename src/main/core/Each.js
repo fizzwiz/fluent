@@ -107,7 +107,6 @@ export class Each {
    *
    * @example
    * const naturals = Each.along(0, n => n + 1);
-   * console.log([...naturals.when(x => x > 3)]); // [4, 5, 6, ...]
    */
   static along(start, next) {
     const got = new Each();
@@ -317,7 +316,7 @@ export class Each {
   /**
    * Slices an iterable based on a predicate or index, or **bridges to asynchronous iteration**.
    *
-   * - If `p` is a predicate function, yields items starting or ending where the predicate matches.
+   * - If `p` is a predicate function(item, index), yields items starting or ending where the predicate matches.
    * - If `p` is a number, treats it as an index boundary for slicing.
    * - If called **without arguments**, this method interprets the iterable as containing Promises
    *   and returns an {@link AsyncEach} that yields their resolved values.  
@@ -326,7 +325,7 @@ export class Each {
    *
    * @static
    * @param {Iterable} aa Input iterable.
-   * @param {Function|number} [p] Predicate function or index boundary.
+   * @param {Function|number} [p] Predicate function(item, i) or index boundary.
    * @param {boolean} [start=true] Whether to start or end the slice at the matching element.
    * @param {boolean} [inclusive=start] Whether to include the boundary element in the result.
    * @returns {Each|AsyncEach} A sliced `Each`, or an `AsyncEach` if no arguments are provided.

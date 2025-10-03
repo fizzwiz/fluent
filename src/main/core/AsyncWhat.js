@@ -16,33 +16,6 @@ import { Errors, TimeoutError } from "../util/Errors.js";
 export class AsyncWhat {
 
     // ----------------------
-    // Abstract instance methods
-    // ----------------------
-
-    /**
-     * Abstract: must be overridden to implement evaluation logic.
-     *
-     * @abstract
-     * @param {...any} args Arguments to evaluate against
-     * @returns {Promise<any>} Result of evaluation
-     */
-    async what(...args) {
-        throw new Error('Abstract method what() must be implemented in subclasses!');
-    }
-
-    /**
-     * Abstract: assign a variable binding (for `let`-style constructs).
-     *
-     * @abstract
-     * @param {string} arg Variable name
-     * @param {any} value Value to bind
-     * @returns {Promise<any>}
-     */
-    async let(arg, value) {
-        throw new Error('Abstract method let() must be implemented!');
-    }
-
-    // ----------------------
     // Construction
     // ----------------------
 
@@ -53,8 +26,9 @@ export class AsyncWhat {
      * @param {any} value Value to return if args match
      * @returns {AsyncWhat}
      */
-    static of(args, value) {
-        if (!Array.isArray(args)) args = [args];
+    static of(...items) {
+        const args = items.slice(0, -1);
+        const value = items.at(-1);
         return AsyncWhat.as(async (...aa) => await AsyncEach.equal(args, aa) ? value : undefined);
     }
 
@@ -76,7 +50,7 @@ export class AsyncWhat {
         }
         const got = async (...args) => await f(...args);
         Object.setPrototypeOf(got, AsyncWhat.prototype);
-        got.what = f;
+        got.what = f.bind(got);
         return got;
     }
 
@@ -247,55 +221,88 @@ which(p = async item => item !== undefined, error = undefined) {
 /**
  * Asynchronous conditional in event-driven mode.
  *
- * Returns an AsyncWhat that executes only when a given event occurs on the
- * specified emitter and the predicate applied to the event arguments evaluates
- * truthy. Rejects with TimeoutError if no matching event is observed within
- * the given timeout.
+ * Returns an AsyncWhat that wraps the current AsyncWhat (`this`) and either starts
+ * or stops it based on the given event and predicate.
  *
- * Example:
- *   AsyncWhat.as(doSomething).when(
- *     evt => evt.type === 'message',
- *     socket,
- *     'message',
- *     5000
- *   );
+ * Behavior:
+ * - `start = true`: the underlying AsyncWhat is only executed when the predicate
+ *   evaluates truthy upon the occurrence of the event.
+ * - `start = false`: the underlying AsyncWhat is immediately invoked (so it can
+ *   run and be stopped) and will be stopped when the predicate evaluates truthy
+ *   upon the event.
+ *
+ * Rejects with `TimeoutError` if no matching event occurs within the specified timeout.
+ *
+ * The returned AsyncWhat proxies the `.stopped` property of the underlying AsyncWhat.
+ *
+ * Example: infinite cyclic execution with start/stop triggers
+ * 
+ *   const cyclic = doSomething.self(Infinity, 100, 1);
+ * 
+ *   const bounded = cyclic
+ *     .when(
+ *       isStart,  
+ *       emitter,
+ *       event,
+ *       undefined,
+ *       true   // start cyclic execution when event occurs
+ *     )
+ *     .when(
+ *       isStop,   
+ *       emitter,
+ *       event,
+ *       undefined,
+ *       false  // stop cyclic execution when event occurs
+ *     );
+ * 
+ *   bounded();   
  *
  * @param {Function} predicate - Predicate `(…eventArgs, emitter) => boolean | Promise<boolean>`
  * @param {EventEmitter|EventTarget} emitter - Event source
  * @param {string} event - Event name to listen for
- * @param {number} [timeoutMs] - Timeout in ms
- * @returns {AsyncWhat} A new asynchronous What
+ * @param {number} [timeoutMs] - Timeout in milliseconds
+ * @param {boolean} [start=true] - If `true`, executes underlying AsyncWhat when predicate matches; if `false`, immediately calls underlying AsyncWhat and stops it when predicate matches
+ * @returns {AsyncWhat} A new asynchronous AsyncWhat that resolves with the result of the underlying function (if starting) or undefined (if stopping)
+ * @throws {TimeoutError} If no matching event occurs within the timeout
  */
-when(predicate, emitter, event, timeoutMs = undefined) {
-    return AsyncWhat.when(predicate, this, emitter, event, timeoutMs);
-  }
-  
-  /**
-   * Static version of {@link when}.
-   *
-   * Waits for an event on an emitter. Each time the event fires,
-   * evaluates `predicate(...eventArgs, emitter)`. If truthy:
-   *   - removes the listener
-   *   - resolves with `f(...eventArgs, emitter)`
-   *
-   * If no matching event occurs within `timeoutMs`, the listener is removed
-   * and a `TimeoutError` is thrown.
-   *
-   * Works with both:
-   * - Node.js EventEmitter (`on`/`off`)
-   * - DOM EventTarget (`addEventListener`/`removeEventListener`)
-   *
-   * @param {Function} predicate - Predicate `(…eventArgs, emitter) => boolean | Promise<boolean>`
-   * @param {Function|AsyncWhat} f - Handler `(…eventArgs, emitter) => any`
-   * @param {EventEmitter|EventTarget} emitter - Source emitter
-   * @param {string} event - Event name
-   * @param {number} [timeoutMs] - Timeout in ms
-   * @returns {AsyncWhat} Resolves to the result of `f`
-   * @throws {TimeoutError} if timeout is reached
-   */
-  static when(predicate, f, emitter, event, timeoutMs) {
+when(predicate, emitter, event, timeoutMs = undefined, start = true) {
+    return AsyncWhat.when(predicate, this, emitter, event, timeoutMs, start);
+}
+
+/**
+ * Static version of {@link when}.
+ *
+ * Waits for an event on an emitter. Each time the event fires,
+ * evaluates `predicate(...eventArgs, emitter)`. If truthy:
+ *   - removes the listener
+ *   - sets `f.stopped = !start`
+ *       - if `start = true`, allows the underlying AsyncWhat `f` to run
+ *       - if `start = false`, stops `f` after it was immediately invoked
+ *   - resolves with `f(...eventArgs, emitter)` only if starting; resolves immediately if stopping
+ *
+ * If `start = false`, the underlying AsyncWhat `f` is called immediately so it exists and can later be stopped.
+ *
+ * If no matching event occurs within `timeoutMs`, the listener is removed
+ * and a `TimeoutError` is thrown.
+ *
+ * Works with both Node.js EventEmitter (`on`/`off`) and DOM EventTarget (`addEventListener`/`removeEventListener`).
+ *
+ * The returned AsyncWhat exposes a `.stopped` property, which proxies `f.stopped`.
+ *
+ * @param {Function} predicate - Predicate `(…eventArgs, emitter) => boolean | Promise<boolean>`
+ * @param {Function|AsyncWhat} f - Handler `(…eventArgs, emitter) => any` or cyclic AsyncWhat
+ * @param {EventEmitter|EventTarget} emitter - Source emitter
+ * @param {string} event - Event name
+ * @param {number} [timeoutMs] - Timeout in ms
+ * @param {boolean} [start=true] - If `true`, executes `f` when predicate matches; if `false`, immediately calls `f` and stops it when predicate matches
+ * @returns {AsyncWhat} Resolves to the result of `f` (if starting) or undefined (if stopping)
+ * @throws {TimeoutError} if timeout is reached
+ */
+  static when(predicate, f, emitter, event, timeoutMs, start = true) {
+    const got = AsyncWhat.as(async (...aa) => {
     
-    return AsyncWhat.as(async () => {
+      if (!start) f(...aa);
+
       return new Promise((resolve, reject) => {
         let timeoutId;
   
@@ -303,7 +310,17 @@ when(predicate, emitter, event, timeoutMs = undefined) {
           try {
             if (await predicate(...args, emitter)) {
               cleanup();
-              resolve(await f(...args, emitter));
+  
+              // Flip stopped flag according to start
+              f.stopped = !start;
+  
+              if (start) {
+                // Only run f when starting
+                resolve(await f(...args, emitter));
+              } else {
+                // Stopping → resolve immediately
+                resolve();
+              }
             }
           } catch (err) {
             cleanup();
@@ -336,6 +353,13 @@ when(predicate, emitter, event, timeoutMs = undefined) {
         }
       });
     });
+  
+    Object.defineProperty(got, "stopped", {
+      get: () => f.stopped,
+      set: v => (f.stopped = v)
+    });
+  
+    return got;
   }
   
     /**
@@ -395,33 +419,42 @@ when(predicate, emitter, event, timeoutMs = undefined) {
     }
 
 /**
- * Self-application: adapts this AsyncWhat for different use cases depending on the first argument.
+ * Dynamically adapts this AsyncWhat instance for different use cases
+ * depending on the arguments provided.
+ * 
+ * Overload modes:
+ * 
+ * 1. **Path-expanding mode** (no arguments):
+ *    - `self()`  
+ *      Converts this AsyncWhat: item -> items to an AsyncWhat: path -> paths by expanding path across the results of this(path.last).
  *
- * Overloads:
+ * 2. **Context-mapping / nominal mode** (string or string[] as first arg):
+ *    - `self(name)` → extracts `ctx[name]` and passes it as input.  
+ *    - `self(nameIn, nameOut)` → maps `ctx[nameIn]` to input and stores result in `ctx[nameOut]`.  
+ *    - `self([name1, name2, ...])` → extracts multiple properties from context.  
+ *    - `self([name1, name2, ...], nameOut)` → stores result in `ctx[nameOut]`.
  *
- * 1. **Timeout mode** (1 number or more than 2 numbers):
- *    - `self(ms)` → runs this AsyncWhat with a timeout of `ms` milliseconds.
- *    - `self(ms, nAttempts, baseDelay, factor = 2)` → runs with timeout and retries `nAttempts` times,
- *      with exponential backoff. Throws an array of errors if all attempts fail.
+ * 3. **Timeout mode** (single number):
+ *    - `self(timeoutMs)`  
+ *      Wraps this AsyncWhat so that it fails if it does not complete within `timeoutMs` ms.  
  *
- * 2. **Argument-binding mode** (2 numbers):
- *    - `self(index, value)` → injects `value` into the argument list at position `index`.
+ * 4. **Argument-binding mode** (two args: number, value):
+ *    - `self(index, value)`  
+ *      Injects `value` into the argument list at position `index`.  
  *
- * 3. **Context-mapping mode** (string):
- *    - `self(name)` → extracts `ctx[name]` as input to this AsyncWhat.
- *    - `self(nameIn, nameOut)` → maps `ctx[nameIn]` to input and stores result into `ctx[nameOut]`.
+ * 5. **Retry mode** (numeric first arg with ≥3 args):
+ *    - `self(nAttempts, baseDelay, factor, maxDelay)`  
+ *      Retries this AsyncWhat with exponential backoff.  
+ *      The produced AsyncWhat has a `.stopped` property which can be set to true to cancel retries.
  *
- * 4. **Context-mapping mode** (string array):
- *    - `self([name1, name2, ...])` → extracts multiple properties from `ctx` as arguments.
- *    - `self([name1, name2, ...], nameOut)` → stores result into `ctx[nameOut]`.
- *
- * @param {number|string|string[]} [timeoutOrIndexOrNames]
- *        Timeout in ms, argument index, or property name(s) to extract from ctx.
- * @param {number|string} [nAttemptsOrValueOrName]
- *        Number of retry attempts (timeout mode), value to inject (argument-binding mode), or
- *        output property name (context-mapping mode).
- * @param {number} [baseDelay=100] Base delay in ms for retries (only in timeout + retry mode).
- * @param {number} [factor=2] Exponential backoff factor for retries (only in timeout + retry mode).
+ * @param {number|string|string[]} [arg0] 
+ *        - Numeric index, retry attempts, timeout in ms, or property name(s) to extract.
+ * @param {number|string} [arg1] 
+ *        - Value to inject (argument-binding), output property name (nominal mode), 
+ *          or retry attempts (retry mode).
+ * @param {number} [baseDelay=100] - Base delay in ms for retry mode
+ * @param {number} [factor=1] - Exponential backoff factor for retry mode
+ * @param {number} [maxDelay=Infinity] - Maximum delay for retry mode
  * @returns {AsyncWhat} A new AsyncWhat instance wrapping the adapted behavior.
  */
 self(...args) {
@@ -447,24 +480,17 @@ static self(f, ...args) {
         // Context-mapping / nominal mode
         const [names, name] = args;
         return AsyncWhat.nominal(f, names, name);
-    } else if(args.length === 1) {  
-        // Timeout mode, single timeout
-        const [timeoutMs] = args;
-        got = async ctx => await AsyncWhat.within(timeoutMs, () => f(ctx), new TimeoutError('')); 
-        return AsyncWhat.as(got);           
+    } else if(args.length === 1) {
+        // timeout
+        return AsyncWhat.within(args[0], f);
     } else if(args.length === 2) {
         // Argument-binding mode
         const [index, value] = args;
         return AsyncWhat.partial(f, index, value);
     } else {
-        // Timeout + retry mode
-        const [timeoutMs, nAttempts, baseDelay, factor] = args;
-        if (factor === undefined) factor = 2;
-        const attempt = AsyncWhat.self(f, timeoutMs);
-        got = async ctx => AsyncWhat.retry(() => attempt(ctx), nAttempts, baseDelay, factor);
-        return AsyncWhat.as(got);
+        // Retry mode
+        return AsyncWhat.retry(f, ...args);
     }
-
 }
 
 /**
@@ -521,84 +547,105 @@ static nominal(f, names, name) {
 
     return AsyncWhat.as(got);
 }
+
 /**
  * Runs an async function with a timeout.
- * 
- * If `fn()` does not resolve or reject within `timeoutMs` milliseconds, the returned
- * promise is rejected with the provided `error` (or a default TimeoutError).
- * 
- * This is useful to guard long-running async operations and ensures
- * the computation does not hang indefinitely.
  *
- * @param {number} timeoutMs - Timeout in milliseconds
- * @param {function(): Promise<any>} fn - Async function to execute
- * @param {Error} [error] - Error to reject with if timeout occurs
- * @returns {Promise<any>} Resolves with the result of `fn()` if completed in time
- * @throws {Error} Throws `error` if the timeout is reached before completion
- * @private
+ * Wraps `fn(ctx)` in a Promise.race against a timeout. 
+ * Returns an AsyncWhat that resolves if `fn` completes before the timeout,
+ * or rejects with the provided error (default TimeoutError).
+ *
+ * @param {number} timeoutMs - Timeout in ms
+ * @param {function(any): Promise<any>} fn - Function to execute
+ * @param {Error} [error] - Error to throw if timeout occurs
+ * @returns {AsyncWhat} An AsyncWhat that enforces the timeout
  */
-static async within(timeoutMs, fn, error = new Error(`Operation timed out after ${timeoutMs}ms`)) {
-    let timer;
-    try {
+static within(timeoutMs, fn, error = new TimeoutError(`Operation timed out after ${timeoutMs}ms`)) {
+    const got = async ctx => {
+      let timer;
+      try {
         return await Promise.race([
-            fn(),
-            new Promise((_, reject) => {
-                timer = setTimeout(() => reject(error), timeoutMs);
-            })
+          fn(ctx),
+          new Promise((_, reject) => {
+            timer = setTimeout(() => reject(error), timeoutMs);
+          })
         ]);
-    } finally {
+      } finally {
         clearTimeout(timer);
-    }
-}
-
+      }
+    };
+  
+    return AsyncWhat.as(got);
+  }
+  
 /**
- * Retries a function multiple times with exponential backoff.
+ * Retries a function multiple times with exponential backoff, wrapped as an AsyncWhat.
  * 
- * Each attempt is scheduled with an exponentially increasing delay:
- * `delay = baseDelay * 2 ** attemptIndex`.
+ * The function `f(ctx)` may be synchronous or asynchronous. If it throws or rejects,
+ * the next attempt is scheduled with an exponentially increasing delay:
+ * `delay = min(baseDelay * factor ** attemptIndex, maxDelay)`.
  * 
- * **Important:** Each attempt starts independently after its scheduled delay,
- * so later attempts can start even if earlier attempts have not yet resolved.
- * This allows for parallelized “racing” retries, improving responsiveness.
+ * Retries are scheduled via `setTimeout`, making this implementation **stack-safe**
+ * even with infinite retries. Only the last error is stored, so it is memory-safe.
  * 
- * The returned promise resolves with the first successful result.
- * If all attempts fail, it rejects with an array of all errors encountered.
- * 
- * @param {function(): Promise<any>} f - Function to retry
- * @param {number} ntimes - Number of attempts
- * @param {number} [baseDelay=100] - Base delay in ms for exponential backoff
- * @param {number} [factor=2] - Multiplicative factor for exponential growth
- * @returns {Promise<any>} Resolves with the first successful result
- * @throws {Array<Error>} Rejects with an array of all errors if all attempts fail
+ * The returned AsyncWhat produces a Promise that has a `.stopped` property:
+ * set it to `true` to cancel further retries. When stopped, the promise rejects
+ * with the last encountered error (or a default "stopped by user" error).
+ *
+ * @param {function(*): any | Promise<any>} f - Function to retry, receives context
+ * @param {number} [ntimes=Infinity] - Maximum number of attempts (`Infinity` for unlimited)
+ * @param {number} [baseDelay=100] - Base delay in milliseconds
+ * @param {number} [factor=1] - Exponential backoff factor
+ * @param {number} [maxDelay=Infinity] - Maximum delay allowed between retries
+ * @returns {AsyncWhat} An AsyncWhat that resolves with the first successful result,
+ * or rejects with the last error.
  */
-static retry(f, ntimes, baseDelay = 100, factor = 2) {
-    return new Promise((resolve, reject) => {
-        let finished = false;
-        const errors = [];
+static retry(f, ntimes = Infinity, baseDelay = 100, factor = 1, maxDelay = Infinity) {
+    
+    let stopped = false;
+    
+    const got = ctx => {
+        let attemptIndex = 0;
+        let lastError = null;
 
-        for (let i = 0; i < ntimes; i++) {
-            const delay = baseDelay * factor ** i; // exponential backoff
+        const p = new Promise((resolve, reject) => {
 
-            setTimeout(async () => {
-                if (finished) return;
+            const tryOnce = async () => {
+                if (stopped) return reject(new Error("Retry stopped by user"));
 
                 try {
-                    const result = await f();
-                    if (!finished) {
-                        finished = true;
-                        resolve(result);
-                    }
+                    const result = await f(ctx);
+                    resolve(result);
                 } catch (err) {
-                    errors[i] = err;
-                    if (errors.filter(Boolean).length === ntimes && !finished) {
-                        finished = true;
-                        reject(errors);
+                    lastError = err;
+                    attemptIndex++;
+                    if (attemptIndex < ntimes && !stopped) {
+                        const delay = Math.min(baseDelay * factor ** (attemptIndex - 1), maxDelay);
+                        setTimeout(tryOnce, delay);
+                    } else {
+                        reject(stopped ? new Error("Retry stopped by user") : lastError);
                     }
                 }
-            }, delay);
-        }
+            };
+
+            tryOnce(); // start first attempt
+        });
+
+        return p;
+    };
+
+    const stoppable =  AsyncWhat.as(got);
+
+    // attach .stopped on the returned function
+    Object.defineProperty(stoppable, "stopped", {
+        get: () => stopped,
+        set: v => { stopped = Boolean(v); }
     });
+
+    return stoppable;
 }
+
+
 
   
 }

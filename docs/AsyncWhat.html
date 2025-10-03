@@ -753,179 +753,6 @@ are caught.</p></td>
     
 
     
-    <h4 class="name" id="let"><span class="type-signature">(async, abstract) </span>let<span class="signature">(arg, value)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Abstract: assign a variable binding (for <code>let</code>-style constructs).</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>arg</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Variable name</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>value</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">any</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Value to bind</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;any></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
     <h4 class="name" id="match"><span class="type-signature"></span>match<span class="signature">(&hellip;ff)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
     
 
@@ -1088,7 +915,7 @@ are caught.</p></td>
     
 
     
-    <h4 class="name" id="self"><span class="type-signature"></span>self<span class="signature">(timeoutOrIndexOrNames<span class="signature-attributes">opt</span>, nAttemptsOrValueOrName<span class="signature-attributes">opt</span>, baseDelay<span class="signature-attributes">opt</span>, factor<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
+    <h4 class="name" id="self"><span class="type-signature"></span>self<span class="signature">(arg0<span class="signature-attributes">opt</span>, arg1<span class="signature-attributes">opt</span>, baseDelay<span class="signature-attributes">opt</span>, factor<span class="signature-attributes">opt</span>, maxDelay<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
     
 
     
@@ -1096,35 +923,46 @@ are caught.</p></td>
 
 
 <div class="description">
-    <p>Self-application: adapts this AsyncWhat for different use cases depending on the first argument.</p>
-<p>Overloads:</p>
+    <p>Dynamically adapts this AsyncWhat instance for different use cases
+depending on the arguments provided.</p>
+<p>Overload modes:</p>
 <ol>
 <li>
-<p><strong>Timeout mode</strong> (1 number or more than 2 numbers):</p>
+<p><strong>Path-expanding mode</strong> (no arguments):</p>
 <ul>
-<li><code>self(ms)</code> → runs this AsyncWhat with a timeout of <code>ms</code> milliseconds.</li>
-<li><code>self(ms, nAttempts, baseDelay, factor = 2)</code> → runs with timeout and retries <code>nAttempts</code> times,
-with exponential backoff. Throws an array of errors if all attempts fail.</li>
+<li><code>self()</code><br>
+Converts this AsyncWhat: item -&gt; items to an AsyncWhat: path -&gt; paths by expanding path across the results of this(path.last).</li>
 </ul>
 </li>
 <li>
-<p><strong>Argument-binding mode</strong> (2 numbers):</p>
+<p><strong>Context-mapping / nominal mode</strong> (string or string[] as first arg):</p>
 <ul>
-<li><code>self(index, value)</code> → injects <code>value</code> into the argument list at position <code>index</code>.</li>
+<li><code>self(name)</code> → extracts <code>ctx[name]</code> and passes it as input.</li>
+<li><code>self(nameIn, nameOut)</code> → maps <code>ctx[nameIn]</code> to input and stores result in <code>ctx[nameOut]</code>.</li>
+<li><code>self([name1, name2, ...])</code> → extracts multiple properties from context.</li>
+<li><code>self([name1, name2, ...], nameOut)</code> → stores result in <code>ctx[nameOut]</code>.</li>
 </ul>
 </li>
 <li>
-<p><strong>Context-mapping mode</strong> (string):</p>
+<p><strong>Timeout mode</strong> (single number):</p>
 <ul>
-<li><code>self(name)</code> → extracts <code>ctx[name]</code> as input to this AsyncWhat.</li>
-<li><code>self(nameIn, nameOut)</code> → maps <code>ctx[nameIn]</code> to input and stores result into <code>ctx[nameOut]</code>.</li>
+<li><code>self(timeoutMs)</code><br>
+Wraps this AsyncWhat so that it fails if it does not complete within <code>timeoutMs</code> ms.</li>
 </ul>
 </li>
 <li>
-<p><strong>Context-mapping mode</strong> (string array):</p>
+<p><strong>Argument-binding mode</strong> (two args: number, value):</p>
 <ul>
-<li><code>self([name1, name2, ...])</code> → extracts multiple properties from <code>ctx</code> as arguments.</li>
-<li><code>self([name1, name2, ...], nameOut)</code> → stores result into <code>ctx[nameOut]</code>.</li>
+<li><code>self(index, value)</code><br>
+Injects <code>value</code> into the argument list at position <code>index</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Retry mode</strong> (numeric first arg with ≥3 args):</p>
+<ul>
+<li><code>self(nAttempts, baseDelay, factor, maxDelay)</code><br>
+Retries this AsyncWhat with exponential backoff.<br>
+The produced AsyncWhat has a <code>.stopped</code> property which can be set to true to cancel retries.</li>
 </ul>
 </li>
 </ol>
@@ -1167,7 +1005,7 @@ with exponential backoff. Throws an array of errors if all attempts fail.</li>
 
         <tr>
             
-                <td class="name"><code>timeoutOrIndexOrNames</code></td>
+                <td class="name"><code>arg0</code></td>
             
 
             <td class="type">
@@ -1203,14 +1041,16 @@ with exponential backoff. Throws an array of errors if all attempts fail.</li>
                 </td>
             
 
-            <td class="description last"><p>Timeout in ms, argument index, or property name(s) to extract from ctx.</p></td>
+            <td class="description last"><ul>
+<li>Numeric index, retry attempts, timeout in ms, or property name(s) to extract.</li>
+</ul></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>nAttemptsOrValueOrName</code></td>
+                <td class="name"><code>arg1</code></td>
             
 
             <td class="type">
@@ -1243,8 +1083,10 @@ with exponential backoff. Throws an array of errors if all attempts fail.</li>
                 </td>
             
 
-            <td class="description last"><p>Number of retry attempts (timeout mode), value to inject (argument-binding mode), or
-output property name (context-mapping mode).</p></td>
+            <td class="description last"><ul>
+<li>Value to inject (argument-binding), output property name (nominal mode),
+or retry attempts (retry mode).</li>
+</ul></td>
         </tr>
 
     
@@ -1283,7 +1125,7 @@ output property name (context-mapping mode).</p></td>
                 </td>
             
 
-            <td class="description last"><p>Base delay in ms for retries (only in timeout + retry mode).</p></td>
+            <td class="description last"><p>Base delay in ms for retry mode</p></td>
         </tr>
 
     
@@ -1317,12 +1159,51 @@ output property name (context-mapping mode).</p></td>
             
                 <td class="default">
                 
-                    2
+                    1
                 
                 </td>
             
 
-            <td class="description last"><p>Exponential backoff factor for retries (only in timeout + retry mode).</p></td>
+            <td class="description last"><p>Exponential backoff factor for retry mode</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxDelay</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    Infinity
+                
+                </td>
+            
+
+            <td class="description last"><p>Maximum delay for retry mode</p></td>
         </tr>
 
     
@@ -1578,173 +1459,7 @@ output property name (context-mapping mode).</p></td>
     
 
     
-    <h4 class="name" id="what"><span class="type-signature">(async, abstract) </span>what<span class="signature">(&hellip;args)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Abstract: must be overridden to implement evaluation logic.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">any</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Arguments to evaluate against</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>Result of evaluation</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;any></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="when"><span class="type-signature"></span>when<span class="signature">(predicate, emitter, event, timeoutMs<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
+    <h4 class="name" id="when"><span class="type-signature"></span>when<span class="signature">(predicate, emitter, event, timeoutMs<span class="signature-attributes">opt</span>, start<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
     
 
     
@@ -1753,17 +1468,36 @@ output property name (context-mapping mode).</p></td>
 
 <div class="description">
     <p>Asynchronous conditional in event-driven mode.</p>
-<p>Returns an AsyncWhat that executes only when a given event occurs on the
-specified emitter and the predicate applied to the event arguments evaluates
-truthy. Rejects with TimeoutError if no matching event is observed within
-the given timeout.</p>
-<p>Example:
-AsyncWhat.as(doSomething).when(
-evt =&gt; evt.type === 'message',
-socket,
-'message',
-5000
+<p>Returns an AsyncWhat that wraps the current AsyncWhat (<code>this</code>) and either starts
+or stops it based on the given event and predicate.</p>
+<p>Behavior:</p>
+<ul>
+<li><code>start = true</code>: the underlying AsyncWhat is only executed when the predicate
+evaluates truthy upon the occurrence of the event.</li>
+<li><code>start = false</code>: the underlying AsyncWhat is immediately invoked (so it can
+run and be stopped) and will be stopped when the predicate evaluates truthy
+upon the event.</li>
+</ul>
+<p>Rejects with <code>TimeoutError</code> if no matching event occurs within the specified timeout.</p>
+<p>The returned AsyncWhat proxies the <code>.stopped</code> property of the underlying AsyncWhat.</p>
+<p>Example: infinite cyclic execution with start/stop triggers</p>
+<p>const cyclic = doSomething.self(Infinity, 100, 1);</p>
+<p>const bounded = cyclic
+.when(
+isStart,<br>
+emitter,
+event,
+undefined,
+true   // start cyclic execution when event occurs
+)
+.when(
+isStop,<br>
+emitter,
+event,
+undefined,
+false  // stop cyclic execution when event occurs
 );</p>
+<p>bounded();</p>
 </div>
 
 
@@ -1790,6 +1524,8 @@ socket,
         <th>Attributes</th>
         
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -1823,6 +1559,10 @@ socket,
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last"><p>Predicate <code>(…eventArgs, emitter) =&gt; boolean | Promise&lt;boolean&gt;</code></p></td>
@@ -1858,6 +1598,10 @@ socket,
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last"><p>Event source</p></td>
         </tr>
@@ -1888,6 +1632,10 @@ socket,
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last"><p>Event name to listen for</p></td>
@@ -1922,8 +1670,51 @@ socket,
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last"><p>Timeout in ms</p></td>
+            <td class="description last"><p>Timeout in milliseconds</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>start</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last"><p>If <code>true</code>, executes underlying AsyncWhat when predicate matches; if <code>false</code>, immediately calls underlying AsyncWhat and stops it when predicate matches</p></td>
         </tr>
 
     
@@ -1982,13 +1773,42 @@ socket,
 
 
 
+<h5>Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        <p>If no matching event occurs within the timeout</p>
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type"><a href="TimeoutError.html">TimeoutError</a></span>
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
 
 
 <h5>Returns:</h5>
 
         
 <div class="param-desc">
-    <p>A new asynchronous What</p>
+    <p>A new asynchronous AsyncWhat that resolves with the result of the underlying function (if starting) or undefined (if stopping)</p>
 </div>
 
 
@@ -2966,7 +2786,7 @@ Throws the specified error if the predicate fails.</p>
     
 
     
-    <h4 class="name" id=".retry"><span class="type-signature">(static) </span>retry<span class="signature">(f, ntimes, baseDelay<span class="signature-attributes">opt</span>, factor<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id=".retry"><span class="type-signature">(static) </span>retry<span class="signature">(f, ntimes<span class="signature-attributes">opt</span>, baseDelay<span class="signature-attributes">opt</span>, factor<span class="signature-attributes">opt</span>, maxDelay<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
     
 
     
@@ -2974,14 +2794,15 @@ Throws the specified error if the predicate fails.</p>
 
 
 <div class="description">
-    <p>Retries a function multiple times with exponential backoff.</p>
-<p>Each attempt is scheduled with an exponentially increasing delay:
-<code>delay = baseDelay * 2 ** attemptIndex</code>.</p>
-<p><strong>Important:</strong> Each attempt starts independently after its scheduled delay,
-so later attempts can start even if earlier attempts have not yet resolved.
-This allows for parallelized “racing” retries, improving responsiveness.</p>
-<p>The returned promise resolves with the first successful result.
-If all attempts fail, it rejects with an array of all errors encountered.</p>
+    <p>Retries a function multiple times with exponential backoff, wrapped as an AsyncWhat.</p>
+<p>The function <code>f(ctx)</code> may be synchronous or asynchronous. If it throws or rejects,
+the next attempt is scheduled with an exponentially increasing delay:
+<code>delay = min(baseDelay * factor ** attemptIndex, maxDelay)</code>.</p>
+<p>Retries are scheduled via <code>setTimeout</code>, making this implementation <strong>stack-safe</strong>
+even with infinite retries. Only the last error is stored, so it is memory-safe.</p>
+<p>The returned AsyncWhat produces a Promise that has a <code>.stopped</code> property:
+set it to <code>true</code> to cancel further retries. When stopped, the promise rejects
+with the last encountered error (or a default &quot;stopped by user&quot; error).</p>
 </div>
 
 
@@ -3049,7 +2870,7 @@ If all attempts fail, it rejects with an array of all errors encountered.</p>
                 </td>
             
 
-            <td class="description last"><p>Function to retry</p></td>
+            <td class="description last"><p>Function to retry, receives context</p></td>
         </tr>
 
     
@@ -3071,6 +2892,8 @@ If all attempts fail, it rejects with an array of all errors encountered.</p>
             
                 <td class="attributes">
                 
+                    &lt;optional><br>
+                
 
                 
 
@@ -3081,10 +2904,12 @@ If all attempts fail, it rejects with an array of all errors encountered.</p>
             
                 <td class="default">
                 
+                    Infinity
+                
                 </td>
             
 
-            <td class="description last"><p>Number of attempts</p></td>
+            <td class="description last"><p>Maximum number of attempts (<code>Infinity</code> for unlimited)</p></td>
         </tr>
 
     
@@ -3123,7 +2948,7 @@ If all attempts fail, it rejects with an array of all errors encountered.</p>
                 </td>
             
 
-            <td class="description last"><p>Base delay in ms for exponential backoff</p></td>
+            <td class="description last"><p>Base delay in milliseconds</p></td>
         </tr>
 
     
@@ -3157,12 +2982,51 @@ If all attempts fail, it rejects with an array of all errors encountered.</p>
             
                 <td class="default">
                 
-                    2
+                    1
                 
                 </td>
             
 
-            <td class="description last"><p>Multiplicative factor for exponential growth</p></td>
+            <td class="description last"><p>Exponential backoff factor</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxDelay</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    Infinity
+                
+                </td>
+            
+
+            <td class="description last"><p>Maximum delay allowed between retries</p></td>
         </tr>
 
     
@@ -3221,42 +3085,14 @@ If all attempts fail, it rejects with an array of all errors encountered.</p>
 
 
 
-<h5>Throws:</h5>
-
-        
-
-<dl>
-    <dt>
-        <div class="param-desc">
-        <p>Rejects with an array of all errors if all attempts fail</p>
-        </div>
-    </dt>
-    <dd></dd>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">Array.&lt;Error></span>
-
-
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
-</dl>
-
-
-    
 
 
 <h5>Returns:</h5>
 
         
 <div class="param-desc">
-    <p>Resolves with the first successful result</p>
+    <p>An AsyncWhat that resolves with the first successful result,
+or rejects with the last error.</p>
 </div>
 
 
@@ -3267,7 +3103,7 @@ If all attempts fail, it rejects with an array of all errors encountered.</p>
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type"><a href="AsyncWhat.html">AsyncWhat</a></span>
 
 
     </dd>
@@ -3458,7 +3294,7 @@ If all attempts fail, it rejects with an array of all errors encountered.</p>
     
 
     
-    <h4 class="name" id=".when"><span class="type-signature">(static) </span>when<span class="signature">(predicate, f, emitter, event, timeoutMs<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
+    <h4 class="name" id=".when"><span class="type-signature">(static) </span>when<span class="signature">(predicate, f, emitter, event, timeoutMs<span class="signature-attributes">opt</span>, start<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
     
 
     
@@ -3471,15 +3307,19 @@ If all attempts fail, it rejects with an array of all errors encountered.</p>
 evaluates <code>predicate(...eventArgs, emitter)</code>. If truthy:</p>
 <ul>
 <li>removes the listener</li>
-<li>resolves with <code>f(...eventArgs, emitter)</code></li>
+<li>sets <code>f.stopped = !start</code>
+<ul>
+<li>if <code>start = true</code>, allows the underlying AsyncWhat <code>f</code> to run</li>
+<li>if <code>start = false</code>, stops <code>f</code> after it was immediately invoked</li>
 </ul>
+</li>
+<li>resolves with <code>f(...eventArgs, emitter)</code> only if starting; resolves immediately if stopping</li>
+</ul>
+<p>If <code>start = false</code>, the underlying AsyncWhat <code>f</code> is called immediately so it exists and can later be stopped.</p>
 <p>If no matching event occurs within <code>timeoutMs</code>, the listener is removed
 and a <code>TimeoutError</code> is thrown.</p>
-<p>Works with both:</p>
-<ul>
-<li>Node.js EventEmitter (<code>on</code>/<code>off</code>)</li>
-<li>DOM EventTarget (<code>addEventListener</code>/<code>removeEventListener</code>)</li>
-</ul>
+<p>Works with both Node.js EventEmitter (<code>on</code>/<code>off</code>) and DOM EventTarget (<code>addEventListener</code>/<code>removeEventListener</code>).</p>
+<p>The returned AsyncWhat exposes a <code>.stopped</code> property, which proxies <code>f.stopped</code>.</p>
 </div>
 
 
@@ -3506,6 +3346,8 @@ and a <code>TimeoutError</code> is thrown.</p>
         <th>Attributes</th>
         
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -3539,6 +3381,10 @@ and a <code>TimeoutError</code> is thrown.</p>
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last"><p>Predicate <code>(…eventArgs, emitter) =&gt; boolean | Promise&lt;boolean&gt;</code></p></td>
@@ -3574,8 +3420,12 @@ and a <code>TimeoutError</code> is thrown.</p>
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last"><p>Handler <code>(…eventArgs, emitter) =&gt; any</code></p></td>
+            <td class="description last"><p>Handler <code>(…eventArgs, emitter) =&gt; any</code> or cyclic AsyncWhat</p></td>
         </tr>
 
     
@@ -3608,6 +3458,10 @@ and a <code>TimeoutError</code> is thrown.</p>
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last"><p>Source emitter</p></td>
         </tr>
@@ -3638,6 +3492,10 @@ and a <code>TimeoutError</code> is thrown.</p>
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last"><p>Event name</p></td>
@@ -3672,8 +3530,51 @@ and a <code>TimeoutError</code> is thrown.</p>
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last"><p>Timeout in ms</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>start</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last"><p>If <code>true</code>, executes <code>f</code> when predicate matches; if <code>false</code>, immediately calls <code>f</code> and stops it when predicate matches</p></td>
         </tr>
 
     
@@ -3767,7 +3668,7 @@ and a <code>TimeoutError</code> is thrown.</p>
 
         
 <div class="param-desc">
-    <p>Resolves to the result of <code>f</code></p>
+    <p>Resolves to the result of <code>f</code> (if starting) or undefined (if stopping)</p>
 </div>
 
 
@@ -4042,6 +3943,237 @@ Returns <code>undefined</code> or throws <code>error</code> if the predicate fai
 
 
         
+            
+
+    
+
+    
+    <h4 class="name" id=".within"><span class="type-signature">(static) </span>within<span class="signature">(timeoutMs, fn, error<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncWhat.html">AsyncWhat</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Runs an async function with a timeout.</p>
+<p>Wraps <code>fn(ctx)</code> in a Promise.race against a timeout.
+Returns an AsyncWhat that resolves if <code>fn</code> completes before the timeout,
+or rejects with the provided error (default TimeoutError).</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>timeoutMs</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Timeout in ms</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Function to execute</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Error</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Error to throw if timeout occurs</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>An AsyncWhat that enforces the timeout</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncWhat.html">AsyncWhat</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
     
 
     
@@ -4063,7 +4195,7 @@ Returns <code>undefined</code> or throws <code>error</code> if the predicate fai
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Mon Sep 29 2025 15:51:16 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri Oct 03 2025 12:42:38 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>
