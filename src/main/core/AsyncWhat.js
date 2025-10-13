@@ -581,69 +581,58 @@ static within(timeoutMs, fn, error = new TimeoutError(`Operation timed out after
 /**
  * Retries a function multiple times with exponential backoff, wrapped as an AsyncWhat.
  * 
- * The function `f(ctx)` may be synchronous or asynchronous. If it throws or rejects,
- * the next attempt is scheduled with an exponentially increasing delay:
- * `delay = min(baseDelay * factor ** attemptIndex, maxDelay)`.
+ * The function `f(ctx)` may be synchronous or asynchronous. If it **throws**, **rejects**,
+ * or **returns `undefined`**, the next attempt is scheduled after an exponentially increasing delay:
  * 
- * Retries are scheduled via `setTimeout`, making this implementation **stack-safe**
- * even with infinite retries. Only the last error is stored, so it is memory-safe.
+ *    delay = min(baseDelay * factor ** attemptIndex, maxDelay)
  * 
- * The returned AsyncWhat produces a Promise that has a `.stopped` property:
+ * Retries are scheduled via `setTimeout`, ensuring **stack safety** even for infinite retries.
+ * Only the last error is kept in memory.
+ * 
+ * The returned AsyncWhat exposes a `.stopped` property:
  * set it to `true` to cancel further retries. When stopped, the promise rejects
- * with the last encountered error (or a default "stopped by user" error).
+ * with the last encountered error, or with `"Retry stopped by user"` if no error occurred.
  *
- * @param {function(*): any | Promise<any>} f - Function to retry, receives context
- * @param {number} [ntimes=Infinity] - Maximum number of attempts (`Infinity` for unlimited)
- * @param {number} [baseDelay=100] - Base delay in milliseconds
- * @param {number} [factor=1] - Exponential backoff factor
- * @param {number} [maxDelay=Infinity] - Maximum delay allowed between retries
- * @returns {AsyncWhat} An AsyncWhat that resolves with the first successful result,
- * or rejects with the last error.
+ * @param {function(*): any | Promise<any>} f - Function to retry; receives a context argument.
+ * @param {number} [ntimes=Infinity] - Maximum number of attempts (`Infinity` for unlimited).
+ * @param {number} [baseDelay=100] - Initial delay between retries (in ms).
+ * @param {number} [factor=1] - Exponential backoff multiplier.
+ * @param {number} [maxDelay=Infinity] - Maximum delay cap between retries.
+ * @returns {AsyncWhat} - Resolves with the first successful result, or rejects with the last error.
  */
 static retry(f, ntimes = Infinity, baseDelay = 100, factor = 1, maxDelay = Infinity) {
-    
-    let stopped = false;
-    
-    const got = ctx => {
-        let attemptIndex = 0;
-        let lastError = null;
+  let stopped = false;
 
-        const p = new Promise((resolve, reject) => {
+  const got = async ctx => {
+    let attemptIndex = 0;
+    let lastError = null;
 
-            const tryOnce = async () => {
-                if (stopped) return reject(new Error("Retry stopped by user"));
+    while (!stopped && attemptIndex < ntimes) {
+      try {
+        const result = await f(ctx);
+        if (result === undefined) throw new Error("AsyncWhat.retry: undefined result (will retry)");
+        return result; // success
+      } catch (err) {
+        lastError = err;
+        const delay = Math.min(baseDelay * factor ** attemptIndex, maxDelay);
+        await new Promise((r) => setTimeout(r, delay)); // stack-safe
+        attemptIndex++;
+      }
+    }
 
-                try {
-                    const result = await f(ctx);
-                    resolve(result);
-                } catch (err) {
-                    lastError = err;
-                    attemptIndex++;
-                    if (attemptIndex < ntimes && !stopped) {
-                        const delay = Math.min(baseDelay * factor ** (attemptIndex - 1), maxDelay);
-                        setTimeout(tryOnce, delay);
-                    } else {
-                        reject(stopped ? new Error("Retry stopped by user") : lastError);
-                    }
-                }
-            };
+    throw stopped ? new Error("Retry stopped by user") : lastError;
+  };
 
-            tryOnce(); // start first attempt
-        });
+  const stoppable = AsyncWhat.as(got);
 
-        return p;
-    };
+  Object.defineProperty(stoppable, "stopped", {
+    get: () => stopped,
+    set: (v) => { stopped = Boolean(v); },
+  });
 
-    const stoppable =  AsyncWhat.as(got);
-
-    // attach .stopped on the returned function
-    Object.defineProperty(stoppable, "stopped", {
-        get: () => stopped,
-        set: v => { stopped = Boolean(v); }
-    });
-
-    return stoppable;
+  return stoppable;
 }
+
 
 
 
