@@ -615,7 +615,7 @@ static retry(f, ntimes = Infinity, baseDelay = 100, factor = 1, maxDelay = Infin
       } catch (err) {
         lastError = err;
         const delay = Math.min(baseDelay * factor ** attemptIndex, maxDelay);
-        await new Promise((r) => setTimeout(r, delay)); // stack-safe
+        await new Promise(resolve => setTimeout(resolve, delay)); // stack-safe
         attemptIndex++;
       }
     }

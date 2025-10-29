@@ -28,35 +28,36 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>Path<span class="signature">(prev<span class="signature-attributes">opt</span>, last<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Path<span class="signature">(parent<span class="signature-attributes">opt</span>, last<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description"><p>A <a href="Path.html"><code>Path</code></a> is a leaf tree node <a href="Scope.html"><code>Scope</code></a> with additional three properties:</p>
+            <div class="class-description"><p>A <a href="Path.html"><code>Path</code></a> is an immutable linked list of items defined by three properties:</p>
 <ul>
-<li><a href="Path.html#prev"><code>prev</code></a></li>
+<li><a href="Path.html#parent"><code>parent</code></a></li>
 <li><a href="Path.html#last"><code>last</code></a></li>
 <li><a href="Path.html#length"><code>length</code></a></li>
 </ul>
-<p>It can be instatiated either from its properties or from a list of items:</p>
+<p>It can be instantiated either from its properties or from a list of items:</p>
 <ul>
 <li><a href="Path.html#.of"><code>of()</code></a></li>
 </ul>
 <p>Its methods:</p>
 <ul>
 <li><a href="Path.html#add"><code>add()</code></a></li>
+<li><a href="Path.html#along"><code>along()</code></a></li>
 <li><a href="Path.html#across"><code>across()</code></a></li>
 </ul>
-<p>create new <a href="Path.html"><code>Path</code></a>s without modifying the source <a href="Path.html"><code>Path</code></a></p>
-<p>As a <a href="Scope.html"><code>Scope</code></a> the <a href="Path.html"><code>Path</code></a> can be iterated only backward, through the method:</p>
-<ul>
-<li><a href="Scope.html#ancestors"><code>ancestors()</code></a></li>
-</ul>
-<p>To iterate forward, the <a href="Path.html"><code>Path</code></a> must before be converted into an array, through the method:</p>
+<p>create new <a href="Path.html"><code>Path</code></a>s without modifying the source <a href="Path.html"><code>Path</code></a>.</p>
+<p>This allows the generation of new Paths without copying the parent path. This is the primary reason to use the <a href="Path.html"><code>Path</code></a>
+class rather than a simple array of items.</p>
+<p>Due to its structure, however, the <a href="Path.html"><code>Path</code></a> can be iterated only backward.
+To iterate forward, the <a href="Path.html"><code>Path</code></a> must first be converted into an array using:</p>
 <ul>
 <li><a href="Path.html#toArray"><code>toArray()</code></a></li>
 </ul>
-<p>More offered methods are:</p>
+<p>Additional methods include:</p>
 <ul>
 <li><a href="Path.html#isEmpty"><code>isEmpty()</code></a></li>
+<li><a href="Path.html#isRoot"><code>isRoot()</code></a></li>
 </ul></div>
         
     
@@ -72,7 +73,7 @@
     
 
     
-    <h4 class="name" id="Path"><span class="type-signature"></span>new Path<span class="signature">(prev<span class="signature-attributes">opt</span>, last<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Path"><span class="type-signature"></span>new Path<span class="signature">(parent<span class="signature-attributes">opt</span>, last<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -118,7 +119,7 @@
 
         <tr>
             
-                <td class="name"><code>prev</code></td>
+                <td class="name"><code>parent</code></td>
             
 
             <td class="type">
@@ -144,7 +145,7 @@
 
             
 
-            <td class="description last"><p>previous path</p></td>
+            <td class="description last"><p>The parent path</p></td>
         </tr>
 
     
@@ -177,7 +178,7 @@
 
             
 
-            <td class="description last"><p>latest step</p></td>
+            <td class="description last"><p>The latest step</p></td>
         </tr>
 
     
@@ -270,16 +271,26 @@
 
         
             
-<h4 class="name" id="last"><span class="type-signature"></span>last<span class="type-signature"></span></h4>
+<h4 class="name" id="last"><span class="type-signature"></span>last<span class="type-signature"> :*</span></h4>
 
 
 
 
 <div class="description">
-    <p>Latest item</p>
+    <p>The latest item of this path</p>
 </div>
 
 
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">*</span>
+
+
+        </li>
+    </ul>
 
 
 
@@ -327,7 +338,7 @@
 
         
             
-<h4 class="name" id="length"><span class="type-signature"></span>length<span class="type-signature"></span></h4>
+<h4 class="name" id="length"><span class="type-signature"></span>length<span class="type-signature"> :number</span></h4>
 
 
 
@@ -338,6 +349,16 @@
 
 
 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">number</span>
+
+
+        </li>
+    </ul>
+
 
 
 
@@ -384,16 +405,29 @@
 
         
             
-<h4 class="name" id="prev"><span class="type-signature"></span>prev<span class="type-signature"></span></h4>
+<h4 class="name" id="parent"><span class="type-signature"></span>parent<span class="type-signature"> :<a href="Path.html">Path</a>|undefined</span></h4>
 
 
 
 
 <div class="description">
-    <p>The previous <a href="Path.html"><code>Path</code></a></p>
+    <p>The parent <a href="Path.html"><code>Path</code></a> of this path</p>
 </div>
 
 
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="Path.html">Path</a></span>
+|
+
+<span class="param-type">undefined</span>
+
+
+        </li>
+    </ul>
 
 
 
@@ -451,7 +485,7 @@
     
 
     
-    <h4 class="name" id="across"><span class="type-signature"></span>across<span class="signature">(items)</span><span class="type-signature"> &rarr; {Iterable.&lt;<a href="Path.html">Path</a>>}</span></h4>
+    <h4 class="name" id="across"><span class="type-signature"></span>across<span class="signature">(steps)</span><span class="type-signature"> &rarr; {Iterable.&lt;<a href="Path.html">Path</a>>}</span></h4>
     
 
     
@@ -459,7 +493,7 @@
 
 
 <div class="description">
-    <p>Create as many new <a href="Path.html"><code>Path</code></a>s as the given items by appending each item to this <a href="Path.html"><code>Path</code></a></p>
+    <p>Generate new <a href="Path.html"><code>Path</code></a>s by appending each given step to this <a href="Path.html"><code>Path</code></a></p>
 </div>
 
 
@@ -495,13 +529,13 @@
 
         <tr>
             
-                <td class="name"><code>items</code></td>
+                <td class="name"><code>steps</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">*</span>
+<span class="param-type">Iterable.&lt;*></span>
 
 
             
@@ -511,7 +545,7 @@
 
             
 
-            <td class="description last"><p>variety of steps which can prolong this path</p></td>
+            <td class="description last"><p>Steps to extend the path</p></td>
         </tr>
 
     
@@ -576,7 +610,7 @@
 
         
 <div class="param-desc">
-    <p>iteration dinamically generating each <a href="Path.html"><code>Path</code></a></p>
+    <p>An iterable producing a new <a href="Path.html"><code>Path</code></a> for each step</p>
 </div>
 
 
@@ -665,7 +699,7 @@
 
             
 
-            <td class="description last"><p>a further step</p></td>
+            <td class="description last"><p>The next step to add</p></td>
         </tr>
 
     
@@ -730,7 +764,7 @@
 
         
 <div class="param-desc">
-    <p>a new <a href="Path.html"><code>Path</code></a></p>
+    <p>A new <a href="Path.html"><code>Path</code></a> with the item appended</p>
 </div>
 
 
@@ -767,7 +801,7 @@
 
 
 <div class="description">
-    <p>Create a new <a href="Path.html"><code>Path</code></a> by appending all the given item to this <a href="Path.html"><code>Path</code></a></p>
+    <p>Create a new <a href="Path.html"><code>Path</code></a> by appending all the given items to this <a href="Path.html"><code>Path</code></a></p>
 </div>
 
 
@@ -809,7 +843,7 @@
             <td class="type">
             
                 
-<span class="param-type">*</span>
+<span class="param-type">Iterable.&lt;*></span>
 
 
             
@@ -819,7 +853,7 @@
 
             
 
-            <td class="description last"><p>further steps</p></td>
+            <td class="description last"><p>Items to append</p></td>
         </tr>
 
     
@@ -884,7 +918,7 @@
 
         
 <div class="param-desc">
-    <p>a new <a href="Path.html"><code>Path</code></a></p>
+    <p>A new <a href="Path.html"><code>Path</code></a> including all appended items</p>
 </div>
 
 
@@ -913,7 +947,7 @@
     
 
     
-    <h4 class="name" id="forget"><span class="type-signature"></span>forget<span class="signature">(key)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="isEmpty"><span class="type-signature"></span>isEmpty<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
     
 
     
@@ -921,168 +955,7 @@
 
 
 <div class="description">
-    <p>Attempts to remove a key binding from this Path.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>key</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The key to forget/remove.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Throws:</h5>
-
-        
-
-<dl>
-    <dt>
-        <div class="param-desc">
-        <p>Always throws because <code>Path</code> is immutable.</p>
-        </div>
-    </dt>
-    <dd></dd>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">Error</span>
-
-
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
-</dl>
-
-
-    
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="isEmpty"><span class="type-signature"></span>isEmpty<span class="signature">()</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Check if this {@Path} is empty</p>
+    <p>Check if this <a href="Path.html"><code>Path</code></a> is empty</p>
 </div>
 
 
@@ -1149,6 +1022,10 @@
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <p>True if the path has no items</p>
+</div>
+
 
 
 <dl>
@@ -1157,7 +1034,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Boolean</span>
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -1175,7 +1052,7 @@
     
 
     
-    <h4 class="name" id="let"><span class="type-signature"></span>let<span class="signature">(key, value)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="isRoot"><span class="type-signature"></span>isRoot<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
     
 
     
@@ -1183,7 +1060,7 @@
 
 
 <div class="description">
-    <p>Attempts to bind a value to a key in this Path.</p>
+    <p>Check if this <a href="Path.html"><code>Path</code></a> has no parent (i.e., is a root path)</p>
 </div>
 
 
@@ -1192,78 +1069,6 @@
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>key</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The key to bind.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>value</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The value to associate with the key.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -1317,221 +1122,30 @@
 
 
 
-<h5>Throws:</h5>
+
+
+<h5>Returns:</h5>
 
         
-
-<dl>
-    <dt>
-        <div class="param-desc">
-        <p>Always throws because <code>Path</code> is immutable.</p>
-        </div>
-    </dt>
-    <dd></dd>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">Error</span>
-
-
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
-</dl>
-
-
-    
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="letChild"><span class="type-signature"></span>letChild<span class="signature">(name, child)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Attempts to bind a child Scope or Path to this Path under a given name.</p>
+<div class="param-desc">
+    <p>True if the path has no parent</p>
 </div>
 
 
 
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The name under which to bind the child.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>child</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The child Scope or Path to bind.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Throws:</h5>
-
-        
-
 <dl>
     <dt>
-        <div class="param-desc">
-        <p>Always throws because <code>Path</code> is immutable.</p>
-        </div>
+        Type
     </dt>
-    <dd></dd>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">Error</span>
+    <dd>
+        
+<span class="param-type">boolean</span>
 
 
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
+    </dd>
 </dl>
 
-
     
-
-
 
 
 
@@ -1543,7 +1157,7 @@
     
 
     
-    <h4 class="name" id="toArray"><span class="type-signature"></span>toArray<span class="signature">(n, f<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;*>}</span></h4>
+    <h4 class="name" id="toArray"><span class="type-signature"></span>toArray<span class="signature">(n<span class="signature-attributes">opt</span>, f<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;*>}</span></h4>
     
 
     
@@ -1551,7 +1165,7 @@
 
 
 <div class="description">
-    <p>Copy latest n steps of this <a href="Path.html"><code>Path</code></a> into an array</p>
+    <p>Convert the last <code>n</code> steps of this <a href="Path.html"><code>Path</code></a> into an array</p>
 </div>
 
 
@@ -1606,6 +1220,8 @@
             
                 <td class="attributes">
                 
+                    &lt;optional><br>
+                
 
                 
 
@@ -1616,10 +1232,12 @@
             
                 <td class="default">
                 
+                    this.length
+                
                 </td>
             
 
-            <td class="description last"><p>number of steps to copy</p></td>
+            <td class="description last"><p>Number of steps to include</p></td>
         </tr>
 
     
@@ -1653,12 +1271,12 @@
             
                 <td class="default">
                 
-                    item=>item
+                    step => step
                 
                 </td>
             
 
-            <td class="description last"><p>function to apply to each step</p></td>
+            <td class="description last"><p>Function to transform each step</p></td>
         </tr>
 
     
@@ -1723,7 +1341,7 @@
 
         
 <div class="param-desc">
-    <p>array of transformed steps</p>
+    <p>An array containing the last <code>n</code> steps (transformed)</p>
 </div>
 
 
@@ -1760,7 +1378,7 @@
 
 
 <div class="description">
-    <p>Create a new <a href="Path.html"><code>Path</code></a> from its items</p>
+    <p>Create a new <a href="Path.html"><code>Path</code></a> from a list of items</p>
 </div>
 
 
@@ -1804,7 +1422,7 @@
             <td class="type">
             
                 
-<span class="param-type">Iterable.&lt;*></span>
+<span class="param-type">*</span>
 
 
             
@@ -1824,7 +1442,7 @@
 
             
 
-            <td class="description last"><p>the items of the <a href="Path.html"><code>Path</code></a></p></td>
+            <td class="description last"><p>The items to include in the path</p></td>
         </tr>
 
     
@@ -1889,7 +1507,7 @@
 
         
 <div class="param-desc">
-    <p>the <a href="Path.html"><code>Path</code></a> of the given items</p>
+    <p>A new <a href="Path.html"><code>Path</code></a> containing the given items</p>
 </div>
 
 
@@ -1928,13 +1546,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-core.html">core</a></li><li><a href="module-util.html">util</a></li></ul><h3>Classes</h3><ul><li><a href="AsyncEach.html">AsyncEach</a></li><li><a href="AsyncWhat.html">AsyncWhat</a></li><li><a href="Each.html">Each</a></li><li><a href="Errors.html">Errors</a></li><li><a href="Path.html">Path</a></li><li><a href="Scope.html">Scope</a></li><li><a href="TimeoutError.html">TimeoutError</a></li><li><a href="What.html">What</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-core.html">core</a></li><li><a href="module-util.html">util</a></li></ul><h3>Classes</h3><ul><li><a href="AsyncEach.html">AsyncEach</a></li><li><a href="AsyncWhat.html">AsyncWhat</a></li><li><a href="Each.html">Each</a></li><li><a href="Errors.html">Errors</a></li><li><a href="Path.html">Path</a></li><li><a href="TimeoutError.html">TimeoutError</a></li><li><a href="What.html">What</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Mon Oct 13 2025 13:17:31 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Oct 29 2025 16:39:51 GMT+0100 (Ora standard dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

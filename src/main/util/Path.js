@@ -1,196 +1,148 @@
 import { Each } from "../core/Each.js";
-import { What } from "../core/What.js";
-import { Scope } from "./Scope.js";
 
 /**
- * A {@link Path} is a leaf tree node {@link Scope} with additional three properties:
+ * A {@link Path} is an immutable linked list of items defined by three properties:
  * 
- * - [prev]{@link Path#prev}
+ * - [parent]{@link Path#parent}
  * - [last]{@link Path#last}
  * - [length]{@link Path#length}
  * 
- * It can be instatiated either from its properties or from a list of items:
+ * It can be instantiated either from its properties or from a list of items:
  * 
  * - [of()]{@link Path.of}
  * 
  * Its methods:
  * 
  * - [add()]{@link Path#add}
+ * - [along()]{@link Path#along}
  * - [across()]{@link Path#across}
  * 
- * create new {@link Path}s without modifying the source {@link Path}
+ * create new {@link Path}s without modifying the source {@link Path}.
  * 
- * As a {@link Scope} the {@link Path} can be iterated only backward, through the method:
+ * This allows the generation of new Paths without copying the parent path. This is the primary reason to use the {@link Path} 
+ * class rather than a simple array of items.
  * 
- * - [ancestors()]{@link Scope#ancestors}
- * 
- * To iterate forward, the {@link Path} must before be converted into an array, through the method:
+ * Due to its structure, however, the {@link Path} can be iterated only backward. 
+ * To iterate forward, the {@link Path} must first be converted into an array using:
  * 
  * - [toArray()]{@link Path#toArray}
  * 
- * More offered methods are:
+ * Additional methods include:
  * 
  * - [isEmpty()]{@link Path#isEmpty}
+ * - [isRoot()]{@link Path#isRoot}
  */
-export class Path extends Scope {
-	
-	/**
-	 * Create a new {@link Path} from its properties
-	 * @param {Path} [prev=undefined] previous path
-	 * @param {*} [last=undefined] latest step
-	 */
-	constructor(prev=undefined, last=undefined) {
-		super(prev, undefined);
+export class Path {
 
-		this._last = last;
-		this._length = prev? prev._length + 1
-			: undefined!==last? 1: 0
-	}
+    /**
+     * The parent {@link Path} of this path
+     * @type {Path|undefined}
+     */
+    parent;
 
-	/**
-	 * Create a new {@link Path} from its items
-	 * @param {Iterable<*>} steps the items of the {@link Path}
-	 * @returns {Path} the {@link Path} of the given items
-	 */
-	static of(...steps) {
-		
-		let got = new Path()
-			.along(steps);
-		
-		return got
-	}
-		
-	/**
-	 * The previous {@link Path}
-	 */
-	get prev() {
-		return this._parent
-	}
-	
-	/**
-	 * Latest item
-	 */
-	get last() {
-		return this._last
-	}
-	
-	/**
-	 * The length of this {@link Path}
-	 */
-	get length() {
-		return this._length
-	}
+    /**
+     * The latest item of this path
+     * @type {*}
+     */ 
+    last;
 
-	/**
-	 * Attempts to bind a value to a key in this Path.
-	 * 
-	 * @param {*} key - The key to bind.
-	 * @param {*} value - The value to associate with the key.
-	 * @throws {Error} Always throws because `Path` is immutable.
-	 * @override
-	 */
-	let(key, value) {
-		throw new Error("A Path is immutable!");
-	}
+    /**
+     * The length of this {@link Path}
+     * @type {number}
+     */
+    length;
 
-	/**
-	 * Attempts to bind a child Scope or Path to this Path under a given name.
-	 *
-	 * @param {string} name - The name under which to bind the child.
-	 * @param {*} child - The child Scope or Path to bind.
-	 * @throws {Error} Always throws because `Path` is immutable.
-	 * @override
-	 */
-	letChild(name, child) {
-		throw new Error("A Path is immutable!");
-	}
+    /**
+     * Create a new {@link Path} from its properties
+     * @param {Path} [parent=undefined] - The parent path
+     * @param {*} [last=undefined] - The latest step
+     */
+    constructor(parent=undefined, last=undefined) {
+        this.parent = parent;
+        this.last = last;
+        this.length = parent ? parent.length + 1 : last !== undefined ? 1 : 0;
+    }
 
-	/**
-	 * Attempts to remove a key binding from this Path.
-	 *
-	 * @param {*} key - The key to forget/remove.
-	 * @throws {Error} Always throws because `Path` is immutable.
-	 * @override
-	 */
-	forget(key) {
-		throw new Error("A Path is immutable!");
-	}
+    /**
+     * Create a new {@link Path} from a list of items
+     * @param {...*} steps - The items to include in the path
+     * @returns {Path} A new {@link Path} containing the given items
+     */
+    static of(...steps) {
+        return new Path().along(steps);
+    }
 
-	/**
-	 * Check if this {@Path} is empty
-	 * @returns {Boolean}
-	 */
-	isEmpty() {
-		return 0 == this._length 
-	}
-	
-	/**
-	 * Create a new {@link Path} by appending the given item to this {@link Path}
-	 * 
-	 * @param {*} item a further step
-	 * @returns {Path} a new {@link Path}
-	 */
-	add(item) {
-		return new Path(0 < this.length? this: undefined, item)
-	}
+    /**
+     * Check if this {@link Path} is empty
+     * @returns {boolean} True if the path has no items
+     */
+    isEmpty() {
+        return this.length === 0;
+    }
 
-	/**
-	 * Create a new {@link Path} by appending all the given item to this {@link Path}
-	 * 
-	 * @param {*} items further steps
-	 * @returns {Path} a new {@link Path}
-	 */
-	along(items) {
-		
-		let got = this;
-		for(let next of items) {
-			got = got.add(next);
-		}
-		
-		return got
-	}
+    /**
+     * Check if this {@link Path} has no parent (i.e., is a root path)
+     * @returns {boolean} True if the path has no parent
+     */
+    isRoot() {
+        return this.parent === undefined;
+    }
 
-	/**
-	 * Create as many new {@link Path}s as the given items by appending each item to this {@link Path}
-	 * 
-	 * @param {*} items variety of steps which can prolong this path 
-	 * @returns {Iterable<Path>} iteration dinamically generating each {@link Path}
-	 */	
-	across(steps) {
-		
-		const 
-			outer = this,
-			got = new Each();
-			
-			got[Symbol.iterator] = function*() {
-				for(let next of steps) {
-					yield outer.add(next)
-				}
-			}
-		
-		return got
-	}
+    /**
+     * Create a new {@link Path} by appending the given item to this {@link Path}
+     * @param {*} item - The next step to add
+     * @returns {Path} A new {@link Path} with the item appended
+     */
+    add(item) {
+        return new Path(this.isEmpty() ? undefined : this, item);
+    }
 
+    /**
+     * Create a new {@link Path} by appending all the given items to this {@link Path}
+     * @param {Iterable<*>} items - Items to append
+     * @returns {Path} A new {@link Path} including all appended items
+     */
+    along(items) {
+        let got = this;
+        for (let next of items) {
+            got = got.add(next);
+        }
+        return got;
+    }
 
-	/**
-	 * Copy latest n steps of this {@link Path} into an array
-	 * 
-	 * @param {number} n number of steps to copy
-	 * @param {function} [f=item=>item] function to apply to each step
-	 * @returns {Array<*>} array of transformed steps
-	 */	
-	toArray(n=this.length, f=step=>step) {
-		
-		const got = new Array(n);   
-		let current = this;
-		
-		while(0 < n) {
-			got[n - 1] = f(current.last);
-			current = current.prev;
-			n--;
-		}
-		
-		return got
-	}
+    /**
+     * Generate new {@link Path}s by appending each given step to this {@link Path}
+     * @param {Iterable<*>} steps - Steps to extend the path
+     * @returns {Iterable<Path>} An iterable producing a new {@link Path} for each step
+     */ 
+    across(steps) {
+        const outer = this,
+              got = new Each();
+        
+        got[Symbol.iterator] = function*() {
+            for (let next of steps) {
+                yield outer.add(next);
+            }
+        }
+        return got;
+    }
+
+    /**
+     * Convert the last `n` steps of this {@link Path} into an array
+     * @param {number} [n=this.length] - Number of steps to include
+     * @param {function} [f=step => step] - Function to transform each step
+     * @returns {Array<*>} An array containing the last `n` steps (transformed)
+     */ 
+    toArray(n=this.length, f=step => step) {
+        n = Math.min(n, this.length); // prevent exceeding length
+        const got = new Array(n);
+        let current = this;
+        while (n > 0) {
+            got[n - 1] = f(current.last);
+            current = current.parent;
+            n--;
+        }
+        return got;
+    }
 
 }
