@@ -76,30 +76,6 @@ export class AsyncEach {
    * @param {*} items Input sequence or value
    * @returns {AsyncEach}
    */
-  /*
-  static as(items) {
-
-
-    if (items instanceof AsyncEach) return items;
-
-    if (items != null && typeof items[Symbol.asyncIterator] === 'function') {
-      const instance = new AsyncEach();
-      instance[Symbol.asyncIterator] = async function* () {
-        for await (const x of items) yield x;
-      };
-      return instance;
-    }
-
-    if (items != null && typeof items[Symbol.iterator] === 'function') {
-      const instance = new AsyncEach();
-      instance[Symbol.asyncIterator] = async function* () {
-        for (const x of items) yield x;
-      };
-      return instance;
-    }
-
-    return AsyncEach.of(items);
-  } */
   static as(items) {
     let got;
 
@@ -397,24 +373,34 @@ static async equal(aa, bb) {
 
   /**
    * Cartesian product with another iterable.
-   * @param {Iterable|AsyncIterable|Promise[]} [that]
+   * In case `that` iterable is undefined, it consumes `this` async iterable.
+   * 
+   * @param {Iterable|AsyncIterable|Promise[]} [that=undefined]
    * @returns {AsyncEach}
    */
   each(that = undefined) {
-    if (that === undefined) return AsyncEach.each(...this);
+    if (that === undefined) {
 
-    const aa = this;
-    const got = new AsyncEach();
+      for await (const _ of this); // consumes this async iteration
+      return undefined;
 
-    got[Symbol.asyncIterator] = async function* () {
-      for await (const a of aa) {
-        for await (const b of AsyncEach.as(that)) {
-          yield [a, b];
+    } else {
+
+      const aa = this;
+      const got = new AsyncEach();
+  
+      got[Symbol.asyncIterator] = async function* () {
+        for await (const a of aa) {
+          for await (const b of AsyncEach.as(that)) {
+            yield [a, b];
+          }
         }
-      }
-    };
+      };
+  
+      return got;
+    }
 
-    return got;
+
   }
 
   /**

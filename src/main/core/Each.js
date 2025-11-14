@@ -419,20 +419,26 @@ export class Each {
 
   /**
    * Computes the Cartesian product with another iterable.
-   *
-   * @param {Iterable} [that]
+   * If another iterable is not provided, consumes this iterable (like Array.forEach()).
+   * 
+   * @param {Iterable} [that = undefined]
    * @returns {Each|What}
    */
   each(that = undefined) {
-    if (that === undefined) return Each.each(...this);
-    const aa = this;
-    const got = new Each();
-    got[Symbol.iterator] = function* () {
-      for (let a of aa) {
-        for (let b of Each.as(that)) yield [a, b];
-      }
-    };
-    return got;
+    if (that === undefined) {
+      for(const _ of this);  // consumes the iteration
+      return undefined;
+    } else {
+      const aa = this;
+      const got = new Each();
+      got[Symbol.iterator] = function* () {
+        for (let a of aa) {
+          for (let b of Each.as(that)) yield [a, b];
+        }
+      };
+      return got;
+    }
+    
   }
 
   /**
