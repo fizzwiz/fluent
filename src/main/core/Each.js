@@ -390,11 +390,13 @@ export class Each {
   /**
    * Zips this `Each` with another iterable.
    *
-   * @param {Iterable} [that]
-   * @returns {Each}
+   * If no iterable is provided, it zips with itself.
+   *
+   * @param {Iterable} [that=this] - The iterable to zip with. Defaults to the current `Each` instance.
+   * @returns {Each} A new `Each` instance containing pairs `[itemFromThis, itemFromThat]`.
    */
-  match(that = undefined) {
-    return that === undefined ? Each.match(...this) : Each.match(this, Each.as(that));
+  match(that = this) {
+    return Each.match(this, that);
   }
 
   /**
