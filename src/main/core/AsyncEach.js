@@ -372,36 +372,68 @@ static async equal(aa, bb) {
   }
 
   /**
-   * Cartesian product with another iterable.
-   * In case `that` iterable is undefined, it consumes `this` async iterable.
-   * 
-   * @param {Iterable|AsyncIterable|Promise[]} [that=undefined]
-   * @returns {AsyncEach}
+   * Computes the Cartesian product of this async iterable with another iterable.
+   *
+   * ### Two behaviors:
+   *
+   * 1. **`each(that)` — Cartesian product**
+   *    If `that` is provided, returns a new `AsyncEach` that yields all pairs:
+   *    ```
+   *    [a, b]  for each a in this, for each b in that
+   *    ```
+   *
+   * 2. **`each()` — consume**
+   *    If called **without arguments**, the method *consumes* this async iterable
+   *    to completion and returns a `Promise<void>`.  
+   *    This is useful to force evaluation of lazy sequences.
+   *
+   * @param {Iterable|AsyncIterable|Promise[]|undefined} [that]
+   *     Optional second iterable for Cartesian product.  
+   *     When omitted, the method instead consumes this async iterable.
+   *
+   * @returns {AsyncEach|Promise<void>}
+   *     - If `that` is provided: an `AsyncEach` producing pairs `[a, b]`.  
+   *     - If omitted: a `Promise` resolving when this iterable has been fully consumed.
+   *
+   * @example
+   * // Cartesian product
+   * const prod = seq.each(otherSeq);
+   * for await (const [a, b] of prod) { ... }
+   *
+   * @example
+   * // Consumption
+   * await seq.each(); // forces full iteration
    */
   each(that = undefined) {
     if (that === undefined) {
-
-      for await (const _ of this); // consumes this async iteration
-      return undefined;
-
-    } else {
-
-      const aa = this;
-      const got = new AsyncEach();
-  
-      got[Symbol.asyncIterator] = async function* () {
-        for await (const a of aa) {
-          for await (const b of AsyncEach.as(that)) {
-            yield [a, b];
-          }
-        }
-      };
-  
-      return got;
+      return AsyncEach.consume(this);
     }
 
+    const aa = this;
+    const got = new AsyncEach();
 
+    got[Symbol.asyncIterator] = async function* () {
+      for await (const a of aa) {
+        for await (const b of AsyncEach.as(that)) {
+          yield [a, b];
+        }
+      }
+    };
+
+    return got;
   }
+
+  /**
+   * Fully consumes an async iterable without producing output.
+   *
+   * @param {AsyncIterable} asyncIter The async iterable to exhaust
+   * @returns {Promise<void>} Resolves when iteration completes
+   * @private
+   */
+  static async consume(asyncIter) {
+    for await (const _ of asyncIter);
+  }
+
 
   /**
    * Cartesian product of multiple iterables.

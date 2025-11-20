@@ -1,7 +1,7 @@
 import { Each } from "./Each.js";
 import { Path } from '../util/Path.js';
 import { AsyncWhat } from "./AsyncWhat.js";
-import { Errors, TimeoutError } from "../util/Errors.js";
+import { Errors } from "../util/Errors.js";
 
 /**
  * The `What` class provides a **functional abstraction layer** for fluent, composable logic.

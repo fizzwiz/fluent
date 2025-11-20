@@ -173,7 +173,7 @@ It provides static and instance methods to construct, transform, and evaluate as
     
 
     
-    <h4 class="name" id="each"><span class="type-signature"></span>each<span class="signature">(that<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    <h4 class="name" id="each"><span class="type-signature"></span>each<span class="signature">(that<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>|Promise.&lt;void>}</span></h4>
     
 
     
@@ -181,7 +181,22 @@ It provides static and instance methods to construct, transform, and evaluate as
 
 
 <div class="description">
-    <p>Cartesian product with another iterable.</p>
+    <p>Computes the Cartesian product of this async iterable with another iterable.</p>
+<h3>Two behaviors:</h3>
+<ol>
+<li>
+<p><strong><code>each(that)</code> — Cartesian product</strong>
+If <code>that</code> is provided, returns a new <code>AsyncEach</code> that yields all pairs:</p>
+<pre class="prettyprint source"><code>[a, b]  for each a in this, for each b in that
+</code></pre>
+</li>
+<li>
+<p><strong><code>each()</code> — consume</strong>
+If called <strong>without arguments</strong>, the method <em>consumes</em> this async iterable
+to completion and returns a <code>Promise&lt;void&gt;</code>.<br>
+This is useful to force evaluation of lazy sequences.</p>
+</li>
+</ol>
 </div>
 
 
@@ -232,6 +247,9 @@ It provides static and instance methods to construct, transform, and evaluate as
 |
 
 <span class="param-type">Array.&lt;Promise></span>
+|
+
+<span class="param-type">undefined</span>
 
 
             
@@ -251,7 +269,8 @@ It provides static and instance methods to construct, transform, and evaluate as
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Optional second iterable for Cartesian product.<br>
+When omitted, the method instead consumes this async iterable.</p></td>
         </tr>
 
     
@@ -315,6 +334,16 @@ It provides static and instance methods to construct, transform, and evaluate as
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <ul>
+<li>If <code>that</code> is provided: an <code>AsyncEach</code> producing pairs <code>[a, b]</code>.
+<ul>
+<li>If omitted: a <code>Promise</code> resolving when this iterable has been fully consumed.</li>
+</ul>
+</li>
+</ul>
+</div>
+
 
 
 <dl>
@@ -324,6 +353,9 @@ It provides static and instance methods to construct, transform, and evaluate as
     <dd>
         
 <span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+|
+
+<span class="param-type">Promise.&lt;void></span>
 
 
     </dd>
@@ -332,6 +364,13 @@ It provides static and instance methods to construct, transform, and evaluate as
     
 
 
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Cartesian productconst prod = seq.each(otherSeq);for await (const [a, b] of prod) { ... }</code></pre>
+
+    <pre class="prettyprint"><code>// Consumptionawait seq.each(); // forces full iteration</code></pre>
 
 
 
@@ -2104,6 +2143,162 @@ generating next values using a function.</p>
     
 
     
+    <h4 class="name" id=".as"><span class="type-signature">(static) </span>as<span class="signature">(items)</span><span class="type-signature"> &rarr; {<a href="AsyncEach.html">AsyncEach</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Coerces an input into an <code>AsyncEach</code>.</p>
+<ul>
+<li>If already an <code>AsyncEach</code>, returns it.</li>
+<li>If async iterable, wraps it.</li>
+<li>If sync iterable, wraps it.</li>
+<li>Otherwise, wraps scalar as one-item sequence.</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>items</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Input sequence or value</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="AsyncEach.html">AsyncEach</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id=".each"><span class="type-signature">(static) </span>each<span class="signature">(&hellip;aaa)</span><span class="type-signature"> &rarr; {<a href="What.html">What</a>}</span></h4>
     
 
@@ -3651,7 +3846,7 @@ Mirrors <a href="Each.html#.each"><code>Each.each</code></a>.</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Oct 29 2025 16:39:51 GMT+0100 (Ora standard dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Nov 20 2025 09:28:07 GMT+0100 (Ora standard dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

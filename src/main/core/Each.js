@@ -418,28 +418,54 @@ export class Each {
   }
 
   /**
-   * Computes the Cartesian product with another iterable.
-   * If another iterable is not provided, consumes this iterable (like Array.forEach()).
-   * 
-   * @param {Iterable} [that = undefined]
-   * @returns {Each|What}
+   * Computes the Cartesian product of this iterable with another iterable.
+   *
+   * ### Two behaviors:
+   *
+   * 1. **`each(that)` — Cartesian product**  
+   *    When `that` is provided, returns a new `Each` producing all ordered pairs:
+   *    ```
+   *    [a, b]   for each a in this, for each b in that
+   *    ```
+   *
+   * 2. **`each()` — consumption**  
+   *    When called **without arguments**, the method simply *consumes* this
+   *    iterable to completion, similar to invoking `Array.prototype.forEach`.
+   *    It returns `undefined`.
+   *
+   * @param {Iterable|undefined} [that]
+   *     Optional iterable to pair with. If omitted, this iterable is consumed.
+   *
+   * @returns {Each|undefined}
+   *     - With `that`: a new `Each` producing pairs `[a, b]`.  
+   *     - Without `that`: `undefined`, after consumption.
+   *
+   * @example
+   * // Cartesian product:
+   * for (const [a, b] of seq.each(other)) {
+   *   console.log(a, b);
+   * }
+   *
+   * @example
+   * // Consumption:
+   * seq.each();  // exhausts `seq`, returns undefined
    */
   each(that = undefined) {
     if (that === undefined) {
-      for(const _ of this);  // consumes the iteration
+      for (const _ of this); // consume
       return undefined;
-    } else {
-      const aa = this;
-      const got = new Each();
-      got[Symbol.iterator] = function* () {
-        for (let a of aa) {
-          for (let b of Each.as(that)) yield [a, b];
-        }
-      };
-      return got;
     }
-    
+
+    const aa = this;
+    const got = new Each();
+    got[Symbol.iterator] = function* () {
+      for (const a of aa) {
+        for (const b of Each.as(that)) yield [a, b];
+      }
+    };
+    return got;
   }
+
 
   /**
    * Computes the Cartesian product of multiple iterables (lazy).
